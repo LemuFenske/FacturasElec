@@ -1,7 +1,7 @@
 <template>
   <q-dialog v-model="isOpen" persistent class="q-pa-md centered-modal">
     <q-card class="modal-card">
-      <q-toolbar class="bg-blue text-white">
+      <q-toolbar class="navbar">
         <q-toolbar-title>Configuración de la Empresa</q-toolbar-title>
         <q-btn flat round dense icon="close" @click="closeModal" class="text-white"></q-btn>
       </q-toolbar>
@@ -108,12 +108,10 @@ export default {
   max-width: 600px;
 }
 
-.bg-blue {
-  background-color: #027be3; /* Color azul de Quasar */
-}
-
-.text-white {
-  color: #fff; /* Texto blanco */
+.navbar {
+  background-color: rgb(36, 255, 149); /* Color azul de Quasar */
+  color: rgb(255, 255, 255);
+  text-align: center;
 }
 
 .modal-content {
@@ -121,7 +119,6 @@ export default {
   background-color: #fff; /* Fondo blanco para el contenido del modal */
 }
 </style>
-
 
 
 

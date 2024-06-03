@@ -33,39 +33,69 @@
         @input="showFactura = $event"
       />
 
-      <!-- Botón para ticket -->
+      <!-- Botón para abrir el modal de ticket -->
       <q-btn
         label="Ticket"
         icon="receipt"
         class="btn-square no-print"
+        @click="showTicket = true"
         flat
       ></q-btn>
+      
+      <!-- Modal de Ticket -->
+      <NuevoTicketModal
+        v-if="showTicket"
+        :value="showTicket"
+        @input="showTicket = $event"
+      />
 
-      <!-- Botón para nota de crédito -->
-     
+      <!-- Botón para abrir el modal de nota de crédito -->
       <q-btn
         label="Nota de Crédito"
         icon="credit_card"
         class="btn-square no-print"
+        @click="showNotaCredito = true"
         flat
       ></q-btn>
+      
+      <!-- Modal de Nota de Crédito -->
+      <NuevaNotaCreditoModal
+        v-if="showNotaCredito"
+        :value="showNotaCredito"
+        @input="showNotaCredito = $event"
+      />
     
-      <!-- Botón para nota de débito -->
+      <!-- Botón para abrir el modal de nota de débito -->
       <q-btn
         label="Nota de Débito"
         icon="payment"
         class="btn-square no-print"
+        @click="showNotaDebito = true"
         flat
       ></q-btn>
+      
+      <!-- Modal de Nota de Débito -->
+      <NuevaNotaDebitoModal
+        v-if="showNotaDebito"
+        :value="showNotaDebito"
+        @input="showNotaDebito = $event"
+      />
 
-      <!-- Botón para cheque -->
+      <!-- Botón para abrir el modal de cheque -->
       <q-btn
         label="Cheque"
         icon="account_balance"
         class="btn-square no-print"
+        @click="showCheque = true"
         flat
       ></q-btn>
       
+      <!-- Modal de Cheque -->
+      <NuevoChequeModal
+        v-if="showCheque"
+        :value="showCheque"
+        @input="showCheque = $event"
+      />
     </q-page>
   </q-page-container>
 </template>
@@ -73,16 +103,28 @@
 <script>
 import EmpresaModal from '../components/EmpresaModal.vue'; 
 import NuevaFacturaModal from '../components/NuevaFacturaModal.vue';
+import NuevoTicketModal from '../components/TicketModal.vue';
+import NuevaNotaCreditoModal from '../components/CreditoModal.vue';
+import NuevaNotaDebitoModal from '../components/DebitoModal.vue';
+import NuevoChequeModal from '../components/ChequeModal.vue';
 
 export default {
   components: {
     EmpresaModal,
     NuevaFacturaModal,
+    NuevoTicketModal,
+    NuevaNotaCreditoModal,
+    NuevaNotaDebitoModal,
+    NuevoChequeModal,
   },
   data() {
     return {
       showEmpresa: false,
       showFactura: false,
+      showTicket: false,
+      showNotaCredito: false,
+      showNotaDebito: false,
+      showCheque: false,
     };
   },
 };
@@ -96,9 +138,9 @@ export default {
   background-color: #ffffff; /* Fondo blanco */
   color: rgb(0, 0, 0);
   border: none; /* Sin borde */
-  box-shadow: none; /* Sin sombra */
+  box-shadow: none; /* Sombra inicial */
   border-radius: 8px;
-  transition: background-color 0.3s;
+  transition: box-shadow 0.3s;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -115,9 +157,12 @@ export default {
   margin-top: 20px;
 }
 
-.btn-square:hover {
-  background-color: #bdbdbd; /* Mantiene el fondo blanco al pasar el mouse */
-  color: rgb(9, 0, 90);
+.btn-square:hover,
+.btn-square:focus,
+.btn-square:active {
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Sombra hacia adentro */
+  background-color: #ffffff; /* Mantener el fondo blanco */
+  color: rgb(0, 0, 63);
 }
 
 .page-content {
@@ -151,4 +196,6 @@ export default {
   display: block;
 }
 </style>
+
+
 

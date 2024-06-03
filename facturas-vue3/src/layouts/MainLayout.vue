@@ -43,16 +43,16 @@ function toggleRightDrawer() {
 
 <style>
 .navbar {
-  background-color: rgb(255, 202, 103);
+  background-color: rgb(36, 255, 149);
 }
 
 .left-drawer {
-  background-color: rgb(255, 222, 159);
+  background-color: rgb(98, 255, 179);
   width: 100px;
 }
 
 .right-drawer {
-  background-color: rgb(237, 216, 185); 
+  background-color: rgb(98, 255, 179); 
 
 }
 
