@@ -6,44 +6,75 @@
         <q-btn flat round dense icon="close" @click="closeModal" class="text-white"></q-btn>
       </q-toolbar>
       <q-card-section class="modal-content">
-        <!-- Aquí debería ir el contenido específico del modal -->
-        <div class="full-width">
-          <q-list class="full-width">
-            <q-item>
-              <q-input v-model="empresa.nombreFantasia" label="Nombre de Fantasía" class="full-width"></q-input>
-            </q-item>
-            <q-item>
-              <q-input v-model="empresa.nombre" label="Razón Social de la Empresa" class="full-width"></q-input>
-            </q-item>
-            <q-item>
-              <q-input v-model="empresa.cuit" label="CUIT" class="full-width"></q-input>
-            </q-item>
-            <q-item>
-              <q-input v-model="empresa.direccion" label="Dirección" class="full-width"></q-input>
-            </q-item>
-            <q-item>
+        <div class="form-container">
+          <div class="row">
+            <div class="column">
+              <q-input
+                v-model="empresaLocal.nombre"
+                label="Nombre de la Empresa"
+                class="full-width"
+              ></q-input>
+            </div>
+            <div class="column">
+              <q-input
+                v-model="empresaLocal.direccion"
+                label="Dirección"
+                class="full-width"
+              ></q-input>
+            </div>
+          </div>
+          <q-space></q-space>
+          <div class="row">
+            <div class="column">
+              <q-input
+                v-model="empresaLocal.razonSocial"
+                label="Razón Social"
+                class="full-width"
+              ></q-input>
+            </div>
+            <div class="column">
+              <q-input
+                v-model="empresaLocal.cuit"
+                label="CUIT"
+                class="full-width"
+              ></q-input>
+            </div>
+          </div>
+          <q-space></q-space>
+          <div class="row">
+            <div class="column">
               <q-select
-                v-model="empresa.condIva"
+                v-model="empresaLocal.condIva"
                 label="Condición de IVA"
                 :options="opcionesIva"
                 class="full-width"
               ></q-select>
-            </q-item>
-            <q-item>
-              <q-input v-model="empresa.ingBrutos" label="Ingresos Brutos" class="full-width"></q-input>
-            </q-item>
-            <q-item>
+            </div>
+            <div class="column">
+              <q-input
+                v-model="empresaLocal.ingBrutos"
+                label="Ingresos Brutos"
+                class="full-width"
+              ></q-input>
+            </div>
+          </div>
+          <q-space></q-space>
+          <div class="row">
+            <div class="column">
               <q-datetime
-                v-model="empresa.fechaInicio"
+                v-model="empresaLocal.fechaInicio"
                 float-label="Fecha de Inicio de Actividades"
                 type="date"
                 format="YYYY/MM/DD"
                 class="full-width"
               ></q-datetime>
-            </q-item>
-          </q-list>
+            </div>
+            <div class="column">
+              <div class="full-width"></div>
+            </div>
+          </div>
         </div>
-        <q-btn label="Guardar" @click="guardarEmpresa" class="q-ml-md full-width"></q-btn>
+        <q-btn label="Guardar" @click="guardarEmpresa" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -53,19 +84,22 @@
 export default {
   name: 'EmpresaModal',
   props: {
-    value: Boolean,
+    empresa: {
+      type: Object,
+      default: () => ({})
+    }
   },
   data() {
     return {
-      isOpen: this.value,
-      empresa: {
-        nombreFantasia: '',
+      isOpen: false,
+      empresaLocal: {
+        razonSocial: '',
         nombre: '',
         cuit: '',
         direccion: '',
         condIva: '',
         ingBrutos: '',
-        fechaInicio: new Date().toISOString().split('T')[0], // Fecha actual
+        fechaInicio: new Date().toISOString().split('T')[0], 
       },
       opcionesIva: [
         'Responsable Inscripto',
@@ -76,23 +110,23 @@ export default {
       ],
     };
   },
-  watch: {
-    value(newValue) {
-      this.isOpen = newValue;
-    },
-    isOpen(newValue) {
-      this.$emit('input', newValue);
-    }
-  },
   methods: {
+    openModal() {
+      this.isOpen = true;
+      if (this.empresa) {
+        this.empresaLocal = { ...this.empresa };
+      }
+    },
     closeModal() {
-      this.isOpen = false; // Actualiza isOpen para cerrar el modal
+      this.isOpen = false;
     },
     guardarEmpresa() {
-      // Lógica para guardar la empresa (placeholder)
-      console.log('Empresa guardada', this.empresa);
-    },
-  },
+      const empresaData = { ...this.empresaLocal };
+      localStorage.setItem('empresa', JSON.stringify(empresaData));
+      this.$emit('empresa-guardada', empresaData);
+      this.closeModal();
+    }
+  }
 };
 </script>
 
@@ -105,73 +139,62 @@ export default {
 
 .modal-card {
   width: 80vw;
-  max-width: 600px;
+  max-width: 800px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .navbar {
-  background-color: rgb(36, 255, 149); /* Color azul de Quasar */
-  color: rgb(255, 255, 255);
+  background-color: #24ff95; 
+  color: #ffffff; 
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
   text-align: center;
 }
 
 .modal-content {
-  padding: 16px;
-  background-color: #fff; /* Fondo blanco para el contenido del modal */
+  padding: 24px;
+  background-color: #ffffff; 
+}
+
+.buttonsave {
+  background-color: #24ff95;
+  display: block;
+  margin: 10px auto 0 auto; 
+  text-align: center;
+  width: 100px;
+  color: rgb(0, 0, 0);
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s;
+  height: 40px; 
+  line-height: 35px; 
+}
+
+.buttonsave:hover {
+  background-color: #1ed87a;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.column {
+  flex: 1;
+  min-width: 250px;
+}
+
+.q-mt-md {
+  margin-top: 16px;
 }
 </style>
 
-
-
-  
-  
-  
-  
-<!-- <q-modal-layout>
-  <q-toolbar slot="header">
-    <q-btn
-      flat
-      round
-      dense
-      v-close-overlay
-      icon="keyboard_arrow_left"
-    ></q-btn>
-    <q-toolbar-title>
-      Configuración de la Empresa
-    </q-toolbar-title>
-  </q-toolbar>
-
-  <div class="full-width">
-    <q-list class="full-width">
-      <q-item>
-        <q-input v-model="empresa.nombreFantasia" float-label="Nombre de Fantasía" class="full-width"></q-input>
-      </q-item>
-      <q-item>
-        <q-input v-model="empresa.nombre" float-label="Razon Social de la Empresa" class="full-width"></q-input>
-      </q-item>
-      <q-item>
-        <q-input v-model="empresa.cuit" float-label="CUIT" class="full-width"></q-input>
-      </q-item>
-      <q-item>
-        <q-input v-model="empresa.direccion" float-label="Dirección" class="full-width"></q-input>
-      </q-item>
-      <q-item>
-        <q-select
-          v-model="empresa.condIva"
-          float-label="Condicion de IVA"
-          radio
-         :options="opcionesIva"
-         class="full-width"
-        ></q-select>
-      </q-item>
-      <q-item>
-        <q-input v-model="empresa.ingBrutos" float-label="Ingresos Brutos" class="full-width"></q-input>
-      </q-item>
-      <q-item>
-      <q-datetime class="full-width" :value="empresa.fechaInicio" float-label="Fecha de Inicio de Actividades" type="date" format="YYYY/MM/DD" @change="val => {empresa.fechaInicio=new Date(val).toISOString().split('T')[0].replace(/-/g, '/'); }"></q-datetime>
-      </q-item>
-    </q-list>  
-  </div>
-  
-  <q-btn label="Guardar" @click="guardarEmpresa()" v-close-overlay class="q-ml-md full-width"></q-btn>
-
-</q-modal-layout> -->

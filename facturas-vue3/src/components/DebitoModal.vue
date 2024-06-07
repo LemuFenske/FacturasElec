@@ -17,7 +17,7 @@
                   label="Número de Nota de Débito"
                 ></q-input>
               </q-item>
-              <q-item>
+              <!-- <q-item>
                 <q-datetime
                   class="full-width"
                   v-model="notaDebito.fecha"
@@ -25,7 +25,7 @@
                   format="YYYY/MM/DD"
                   label="Fecha de Emisión"
                 ></q-datetime>
-              </q-item>
+              </q-item> -->
               <q-item>
                 <q-input
                   class="full-width"
@@ -43,7 +43,7 @@
               </q-item>
             </q-list>
           </div>
-          <q-btn label="Guardar" @click="guardarNotaDebito" class="q-ml-md full-width"></q-btn>
+          <q-btn label="Guardar" @click="guardarNotaDebito" class="buttonsave"></q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -51,62 +51,96 @@
   
   <script>
   export default {
-    name: 'NuevaNotaDebitoModal',
-    props: {
-      value: Boolean,
+  name: 'DebitoModal',
+  props: {
+    value: Boolean,
+  },
+  data() {
+    return {
+      isOpen: false,
+      notaDebito: {
+        numero: '',
+        fecha: new Date().toISOString().split('T')[0],
+        monto: '',
+        concepto: '',
+      },
+    };
+  },
+  methods: {
+    openModal() {
+      this.isOpen = true;
     },
-    data() {
-      return {
-        isOpen: this.value,
-        notaDebito: {
-          numero: '',
-          fecha: new Date().toISOString().split('T')[0], // Fecha actual
-          monto: '',
-          concepto: '',
-        },
+    closeModal() {
+      this.isOpen = false;
+    },
+    guardarNotaDebito() {
+      
+      let notasDebito = JSON.parse(localStorage.getItem('notasDebito')) || [];
+
+     
+      const nuevaNotaDebito = {
+        ...this.notaDebito,
+        index: notasDebito.length, 
       };
+
+      
+      notasDebito.push(nuevaNotaDebito);
+
+     
+      localStorage.setItem('notasDebito', JSON.stringify(notasDebito));
+
+
+      
+      this.closeModal();
     },
-    watch: {
-      value(newValue) {
-        this.isOpen = newValue;
-      },
-      isOpen(newValue) {
-        this.$emit('input', newValue);
-      }
-    },
-    methods: {
-      closeModal() {
-        this.isOpen = false; // Actualiza isOpen para cerrar el modal
-      },
-      guardarNotaDebito() {
-        // Lógica para guardar la nota de débito (placeholder)
-        console.log('Nota de Débito guardada', this.notaDebito);
-      },
-    },
-  };
+  },
+};
   </script>
   
   <style scoped>
   .centered-modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modal-card {
-    width: 80vw;
-    max-width: 600px;
-  }
-  
-  .navbar {
-    background-color: rgb(36, 255, 149); /* Color azul de Quasar */
-    color: rgb(255, 255, 255);
-    text-align: center;
-  }
-  
-  .modal-content {
-    padding: 16px;
-    background-color: #fff; /* Fondo blanco para el contenido del modal */
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-card {
+  width: 80vw;
+  max-width: 600px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.navbar {
+  background-color: #24ff95; /* Color verde */
+  color: #ffffff; /* Texto blanco */
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  text-align: center;
+}
+
+.modal-content {
+  padding: 24px;
+  background-color: #ffffff; /* Fondo blanco */
+}
+
+.buttonsave {
+  background-color: #24ff95; /* Color verde */
+  display: block;
+  margin: 10px auto 0 auto; /* Reducido el margen inferior */
+  text-align: center;
+  width: 100px;
+  color: rgb(0, 0, 0);
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s;
+  height: 40px; /* Ajusta la altura del botón */
+  line-height: 35px; /* Centra el texto verticalmente */
+}
+
+.buttonsave:hover {
+  background-color: #1ed87a;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
   </style>
   

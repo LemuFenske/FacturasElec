@@ -17,7 +17,7 @@
                 label="Número de Ticket"
               ></q-input>
             </q-item>
-            <q-item>
+            <!-- <q-item>
               <q-datetime
                 class="full-width"
                 v-model="ticket.fecha"
@@ -25,7 +25,7 @@
                 format="YYYY/MM/DD"
                 label="Fecha de Emisión"
               ></q-datetime>
-            </q-item>
+            </q-item> -->
             <q-item>
               <q-input
                 class="full-width"
@@ -44,39 +44,55 @@
 
 <script>
 export default {
-  name: 'NuevoTicketModal',
+  name: 'TicketModal',
   props: {
     value: Boolean,
   },
   data() {
     return {
-      isOpen: this.value,
+      isOpen: false,
       ticket: {
         numero: '',
-        fecha: new Date().toISOString().split('T')[0], // Fecha actual
+        fecha: new Date().toISOString().split('T')[0], 
         monto: '',
       },
     };
   },
-  watch: {
-    value(newValue) {
-      this.isOpen = newValue;
-    },
-    isOpen(newValue) {
-      this.$emit('input', newValue);
-    }
-  },
   methods: {
+    openModal() {
+      this.isOpen = true;
+    },
     closeModal() {
-      this.isOpen = false; // Actualiza isOpen para cerrar el modal
+      this.isOpen = false;
     },
     guardarTicket() {
-      // Lógica para guardar el ticket (placeholder)
-      console.log('Ticket guardado', this.ticket);
+      let tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+
+      
+      const nuevoTicket = {
+        ...this.ticket,
+        index: tickets.length,
+      };
+
+     
+      tickets.push(nuevoTicket);
+
+      
+      localStorage.setItem('tickets', JSON.stringify(tickets));
+
+      console.log('Ticket guardado', nuevoTicket);
+
+      
+      this.$emit('ticket-guardado', nuevoTicket);
+
+     
+      this.closeModal();
     },
   },
 };
 </script>
+
+
 
 <style scoped>
 .centered-modal {
@@ -93,8 +109,8 @@ export default {
 }
 
 .navbar {
-  background-color: #24ff95; /* Color verde */
-  color: #ffffff; /* Texto blanco */
+  background-color: #24ff95; 
+  color: #ffffff;
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   text-align: center;
@@ -102,31 +118,21 @@ export default {
 
 .modal-content {
   padding: 24px;
-  background-color: #ffffff; /* Fondo blanco */
-}
-
-.full-width {
-  width: 100%;
-}
-
-.q-list-header {
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 10px;
+  background-color: #ffffff; 
 }
 
 .buttonsave {
-  background-color: #24ff95; /* Color verde */
+  background-color: #24ff95; 
   display: block;
-  margin: 10px auto 0 auto; /* Reducido el margen inferior */
+  margin: 10px auto 0 auto; 
   text-align: center;
   width: 100px;
-  color: white;
+  color: rgb(0, 0, 0);
   border-radius: 5px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s, box-shadow 0.3s;
-  height: 40px; /* Ajusta la altura del botón */
-  line-height: 35px; /* Centra el texto verticalmente */
+  height: 40px; 
+  line-height: 35px; 
 }
 
 .buttonsave:hover {
