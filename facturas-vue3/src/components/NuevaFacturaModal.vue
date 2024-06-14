@@ -118,13 +118,36 @@
           </q-list>
         </div>
 
+        <!-- Aquí mostramos el IVA, el subtotal y el total en tiempo real -->
+        <div class="form-container">
+          <q-list class="full-width">
+            <q-list-header>Resumen</q-list-header>
+            <q-item>
+              <div class="row">
+                <div class="col-sm-4 q-pa-xs">
+                  <q-input v-model="subtotal" readonly label="Subtotal"></q-input>
+                </div>
+                <div class="col-sm-4 q-pa-xs">
+                  <q-input v-model="iva" readonly label="IVA"></q-input>
+                </div>
+                <div class="col-sm-4 q-pa-xs">
+                  <q-input v-model="total" readonly label="Total"></q-input>
+                </div>
+              </div>
+            </q-item>
+          </q-list>
+        </div>
+
         <q-btn label="Guardar" @click="guardarFactura" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
 </template>
 
+
 <script>
+import { computed } from 'vue';
+
 export default {
   name: 'NuevaFacturaModal',
   data() {
@@ -145,8 +168,8 @@ export default {
         productosFactura: [
           {
             nombre: '',
-            cantidad: '',
-            precio: '',
+            cantidad: 0,
+            precio: 0,
             unidad: '',
           },
         ],
@@ -155,7 +178,19 @@ export default {
       opcionesCondVenta: ['Contado', 'Crédito'],
       opcionesIvaCliente: ['Responsable Inscripto', 'Monotributista', 'Exento', 'No Responsable', 'Consumidor Final'],
       opcionesUnidades: ['Unidad', 'Kg', 'Litro'],
+      ivaPorcentaje: 21, // Porcentaje de IVA
     };
+  },
+  computed: {
+    subtotal() {
+      return this.factura.productosFactura.reduce((sum, producto) => sum + producto.precio * producto.cantidad, 0);
+    },
+    iva() {
+      return this.subtotal * (this.ivaPorcentaje / 100);
+    },
+    total() {
+      return this.subtotal + this.iva;
+    },
   },
   methods: {
     openModal() {
@@ -173,45 +208,33 @@ export default {
       this.factura.numero = ('00000000' + val2).substr(-8);
     },
     guardarFactura() {
-      // Obtener las facturas almacenadas en localStorage
       let facturas = JSON.parse(localStorage.getItem('facturas')) || [];
-
-      // Calcular el subtotal y el IVA
-      const subtotal = this.factura.productosFactura.reduce((sum, producto) => sum + producto.precio * producto.cantidad, 0);
-      const iva = subtotal * 0.21; // Asumiendo 21 de IVA
-
-      // Crear una nueva factura con los datos necesarios
       const nuevaFactura = {
         ...this.factura,
-        subtotal,
-        iva,
+        subtotal: this.subtotal,
+        iva: this.iva,
+        total: this.total,
         index: facturas.length,
         editable: true,
       };
 
-      // Agregar la nueva factura al array de facturas
       facturas.push(nuevaFactura);
-
-      // Guardar el array de facturas actualizado en el localStorage
       localStorage.setItem('facturas', JSON.stringify(facturas));
-
-      // Emitir evento para actualizar lista de facturas
       this.$emit('factura-guardada', nuevaFactura);
-
-     
       this.closeModal();
     },
     agregarProducto() {
       this.factura.productosFactura.push({
         nombre: '',
-        cantidad: '',
-        precio: '',
+        cantidad: 0,
+        precio: 0,
         unidad: '',
       });
     },
   },
 };
 </script>
+
 
 <style scoped>
 .centered-modal {
