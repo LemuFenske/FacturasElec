@@ -61,13 +61,13 @@
           <q-space></q-space>
           <div class="row">
             <div class="column">
-              <q-datetime
+              <q-input
                 v-model="empresaLocal.fechaInicio"
                 float-label="Fecha de Inicio de Actividades"
                 type="date"
                 format="YYYY/MM/DD"
                 class="full-width"
-              ></q-datetime>
+              ></q-input>
             </div>
             <div class="column">
               <div class="full-width"></div>
@@ -81,6 +81,9 @@
 </template>
 
 <script>
+// import {useQuasar} from 'quasar'
+
+// const $q = useQuasar
 export default {
   name: 'EmpresaModal',
   props: {
@@ -122,7 +125,7 @@ export default {
     },
     guardarEmpresa() {
       const empresaData = { ...this.empresaLocal };
-      localStorage.setItem('empresa', JSON.stringify(empresaData));
+      this.$q.localStorage.set('empresa', empresaData);
       this.$emit('empresa-guardada', empresaData);
       this.closeModal();
     }

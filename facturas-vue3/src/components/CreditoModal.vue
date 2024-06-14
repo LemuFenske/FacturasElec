@@ -8,7 +8,7 @@
       <q-card-section class="modal-content">
         <div>
           <q-list class="full-width">
-            <q-list-header>Datos de la Nota de Crédito</q-list-header>
+            <q-item-label header>Datos de la Nota de Crédito</q-item-label>
             <q-item>
               <q-input
                 class="full-width"
@@ -17,15 +17,6 @@
                 label="Número de Nota de Crédito"
               ></q-input>
             </q-item>
-            <!-- <q-item>
-              <q-datetime
-                class="full-width"
-                v-model="notaCredito.fecha"
-                type="date"
-                format="YYYY/MM/DD"
-                label="Fecha de Emisión"
-              ></q-datetime>
-            </q-item> -->
             <q-item>
               <q-input
                 class="full-width"

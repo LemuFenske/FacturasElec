@@ -8,7 +8,7 @@
       <q-card-section class="modal-content">
         <div>
           <q-list class="full-width">
-            <q-list-header>Datos del Cheque</q-list-header>
+            <q-item-label header>Datos del Cheque</q-item-label>
             <q-item>
               <q-input
                 class="full-width"
@@ -24,14 +24,6 @@
                 label="Número de Cheque"
               ></q-input>
             </q-item>
-            <!-- <q-item>
-              <q-date
-                class="full-width"
-                v-model="cheque.fecha"
-                format="YYYY/MM/DD"
-                label="Fecha de Emisión"
-              ></q-date>
-            </q-item> -->
             <q-item>
               <q-input
                 class="full-width"

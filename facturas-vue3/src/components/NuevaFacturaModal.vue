@@ -8,7 +8,7 @@
       <q-card-section class="modal-content">
         <div class="form-container">
           <q-list class="full-width">
-            <q-list-header>Datos generales</q-list-header>
+            <q-item-label header>Datos generales</q-item-label>
             <div class="row">
               <q-item class="half-width">
                 <q-select
@@ -52,7 +52,7 @@
 
         <div class="form-container">
           <q-list class="full-width">
-            <q-list-header>Datos del cliente</q-list-header>
+            <q-item-label header>Datos del cliente</q-item-label>
             <div class="row">
               <q-item class="half-width">
                 <q-input
@@ -91,7 +91,7 @@
 
         <div class="form-container">
           <q-list class="full-width">
-            <q-list-header>Productos</q-list-header>
+            <q-item-label header>Productos</q-item-label>
             <q-item v-for="(producto, index) in factura.productosFactura" :key="index">
               <div class="row">
                 <div class="col-sm-3 q-pa-xs">
@@ -121,7 +121,7 @@
         <!-- Aquí mostramos el IVA, el subtotal y el total en tiempo real -->
         <div class="form-container">
           <q-list class="full-width">
-            <q-list-header>Resumen</q-list-header>
+            <q-item-label header>Resumen</q-item-label>
             <q-item>
               <div class="row">
                 <div class="col-sm-4 q-pa-xs">
