@@ -24,6 +24,7 @@ module.exports = configure(function (/* ctx */) {
       
       
     ],
+    
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
@@ -50,7 +51,7 @@ module.exports = configure(function (/* ctx */) {
         browser: [ 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1' ],
         node: 'node20'
       },
-
+      publicPath: '/facturas-test/',
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,

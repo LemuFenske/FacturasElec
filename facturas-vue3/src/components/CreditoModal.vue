@@ -73,7 +73,7 @@ export default {
     closeModal() {
       this.isOpen = false;
     },
-    guardarNotaCredito() {e
+    guardarNotaCredito() {
       let notasCredito = JSON.parse(localStorage.getItem('notasCredito')) || [];
 
       const nuevaNotaCredito = {
