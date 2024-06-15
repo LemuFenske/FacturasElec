@@ -208,7 +208,8 @@ export default {
       this.factura.numero = ('00000000' + val2).substr(-8);
     },
     guardarFactura() {
-      let facturas = JSON.parse(localStorage.getItem('facturas')) || [];
+      let facturas = this.$q.localStorage.getItem('facturas') || [];
+
       const nuevaFactura = {
         ...this.factura,
         subtotal: this.subtotal,
@@ -219,10 +220,14 @@ export default {
       };
 
       facturas.push(nuevaFactura);
-      localStorage.setItem('facturas', JSON.stringify(facturas));
+
+      this.$q.localStorage.set('facturas', facturas);
+
       this.$emit('factura-guardada', nuevaFactura);
+
       this.closeModal();
     },
+
     agregarProducto() {
       this.factura.productosFactura.push({
         nombre: '',

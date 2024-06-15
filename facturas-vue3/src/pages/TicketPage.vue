@@ -44,10 +44,11 @@ export default {
   },
   mounted() {
     // Cargar los tickets desde el localStorage al iniciar la página
-    const storedTickets = localStorage.getItem('tickets');
+    const storedTickets = this.$q.localStorage.getItem('tickets');
     if (storedTickets) {
-      this.tickets = JSON.parse(storedTickets);
+      this.tickets = storedTickets;
     }
+
   },
   methods: {
     openTicketModal() {

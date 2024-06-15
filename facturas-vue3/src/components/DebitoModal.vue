@@ -66,25 +66,22 @@
       this.isOpen = false;
     },
     guardarNotaDebito() {
-      
-      let notasDebito = JSON.parse(localStorage.getItem('notasDebito')) || [];
+      let notasDebito = this.$q.localStorage.getItem('notasDebito') || [];
 
-     
       const nuevaNotaDebito = {
         ...this.notaDebito,
-        index: notasDebito.length, 
+        index: notasDebito.length,
       };
 
-      
       notasDebito.push(nuevaNotaDebito);
 
-     
-      localStorage.setItem('notasDebito', JSON.stringify(notasDebito));
+      this.$q.localStorage.set('notasDebito', notasDebito);
 
+      this.$emit('debito-guardado', nuevaNotaDebito);
 
-      
       this.closeModal();
     },
+
   },
 };
   </script>

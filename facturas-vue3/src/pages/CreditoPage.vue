@@ -48,10 +48,11 @@
     },
     mounted() {
      
-      const storedNotasCredito = localStorage.getItem('notasCredito');
+      const storedNotasCredito = this.$q.localStorage.getItem('notasCredito');
       if (storedNotasCredito) {
-        this.notasCredito = JSON.parse(storedNotasCredito);
+        this.notasCredito = storedNotasCredito;
       }
+
     },
     methods: {
       openCreditoModal() {

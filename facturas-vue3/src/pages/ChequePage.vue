@@ -46,10 +46,11 @@
       };
     },
     mounted() {
-      const storedCheques = localStorage.getItem('cheques');
+      const storedCheques = this.$q.localStorage.getItem('cheques');
       if (storedCheques) {
-        this.cheques = JSON.parse(storedCheques);
+      this.cheques = storedCheques;
       }
+
     },
     methods: {
       openChequeModal() {

@@ -136,45 +136,47 @@ export default {
     };
   },
   mounted() {
-    // Cargar los datos desde el localStorage al iniciar la página
-    const storedEmpresa = localStorage.getItem('empresa');
-    if (storedEmpresa) {
-      this.empresa = JSON.parse(storedEmpresa);
-    }
+  // Cargar los datos desde el localStorage al iniciar la página
+  const storedEmpresa = this.$q.localStorage.getItem('empresa');
+  if (storedEmpresa) {
+    this.empresa = storedEmpresa;
+  }
 
-    const storedFacturas = localStorage.getItem('facturas');
-    if (storedFacturas) {
-      this.facturas = JSON.parse(storedFacturas);
-    }
+  const storedFacturas = this.$q.localStorage.getItem('facturas');
+  if (storedFacturas) {
+    this.facturas = storedFacturas;
+  }
 
-    const storedNotasCredito = localStorage.getItem('notasCredito');
-    if (storedNotasCredito) {
-      this.notasCredito = JSON.parse(storedNotasCredito);
-    }
+  const storedNotasCredito = this.$q.localStorage.getItem('notasCredito');
+  if (storedNotasCredito) {
+    this.notasCredito = storedNotasCredito;
+  }
 
-    const storedNotasDebito = localStorage.getItem('notasDebito');
-    if (storedNotasDebito) {
-      this.notasDebito = JSON.parse(storedNotasDebito);
-    }
+  const storedNotasDebito = this.$q.localStorage.getItem('notasDebito');
+  if (storedNotasDebito) {
+    this.notasDebito = storedNotasDebito;
+  }
 
-    const storedTickets = localStorage.getItem('tickets');
-    if (storedTickets) {
-      this.tickets = JSON.parse(storedTickets);
-    }
+  const storedTickets = this.$q.localStorage.getItem('tickets');
+  if (storedTickets) {
+    this.tickets = storedTickets;
+  }
 
-    const storedCheques = localStorage.getItem('cheques');
-    if (storedCheques) {
-      this.cheques = JSON.parse(storedCheques);
-    }
-  },
+  const storedCheques = this.$q.localStorage.getItem('cheques');
+  if (storedCheques) {
+    this.cheques = storedCheques;
+  }
+},
+
+
   methods: {
     openEmpresaModal() {
       this.$refs.empresaModal.openModal();
     },
     mostrarEmpresa(empresaData) {
-      this.empresa = empresaData;
-      localStorage.setItem('empresa', JSON.stringify(empresaData));
-    }
+    this.empresa = empresaData;
+    this.$q.localStorage.set('empresa', empresaData);
+}
   }
 };
 </script>
@@ -186,7 +188,7 @@ export default {
 .buttonmodal{
   width: 100%;
   align-items: center;
-  background-color: blue;
+  background-color: rgba(0, 0, 255, 0);
 }
 .btn-square {
   margin-inline: auto;

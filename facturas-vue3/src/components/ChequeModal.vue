@@ -65,16 +65,20 @@ export default {
       this.isOpen = false;
     },
     guardarCheque() {
-      let cheques = JSON.parse(localStorage.getItem('cheques')) || [];
+      let cheques = this.$q.localStorage.getItem('cheques') || [];
+
+      if (typeof cheques === 'string') {
+        cheques = JSON.parse(cheques);
+      }
 
       const nuevoCheque = {
         ...this.cheque,
-        index: cheques.length, 
+        index: cheques.length,
       };
 
       cheques.push(nuevoCheque);
 
-      localStorage.setItem('cheques', JSON.stringify(cheques));
+      this.$q.localStorage.set('cheques', cheques);
 
       this.$emit('cheque-guardado', nuevoCheque);
 

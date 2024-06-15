@@ -57,28 +57,24 @@ export default {
       this.isOpen = false;
     },
     guardarTicket() {
-      let tickets = JSON.parse(localStorage.getItem('tickets')) || [];
+      let tickets = this.$q.localStorage.getItem('tickets') || [];
 
-      
       const nuevoTicket = {
         ...this.ticket,
         index: tickets.length,
       };
 
-     
       tickets.push(nuevoTicket);
 
-      
-      localStorage.setItem('tickets', JSON.stringify(tickets));
+      this.$q.localStorage.set('tickets', tickets);
 
       console.log('Ticket guardado', nuevoTicket);
 
-      
       this.$emit('ticket-guardado', nuevoTicket);
 
-     
       this.closeModal();
     },
+
   },
 };
 </script>

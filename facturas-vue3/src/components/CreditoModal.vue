@@ -65,23 +65,22 @@ export default {
       this.isOpen = false;
     },
     guardarNotaCredito() {
-      let notasCredito = JSON.parse(localStorage.getItem('notasCredito')) || [];
+      let notasCredito = this.$q.localStorage.getItem('notasCredito') || [];
 
       const nuevaNotaCredito = {
-        ...this.notaCredito,
-        index: notasCredito.length, 
+      ...this.notaCredito,
+      index: notasCredito.length,
       };
 
       notasCredito.push(nuevaNotaCredito);
 
-      
-      localStorage.setItem('notasCredito', JSON.stringify(notasCredito));
+      this.$q.localStorage.set('notasCredito', notasCredito);
 
       this.$emit('credito-guardado', nuevaNotaCredito);
 
-
       this.closeModal();
     },
+
   },
 };
 </script>

@@ -49,10 +49,11 @@
       };
     },
     mounted() {
-      const storedDebitos = localStorage.getItem('notasDebito');
+      const storedDebitos = this.$q.localStorage.getItem('notasDebito');
       if (storedDebitos) {
-        this.debitos = JSON.parse(storedDebitos);
+        this.debitos = storedDebitos;
       }
+
     },
     methods: {
       openDebitoModal() {
