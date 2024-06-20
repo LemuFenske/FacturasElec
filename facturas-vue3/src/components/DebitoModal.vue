@@ -1,90 +1,101 @@
 <template>
-    <q-dialog v-model="isOpen" persistent class="q-pa-md centered-modal">
-      <q-card class="modal-card">
-        <q-toolbar class="navbar">
-          <q-toolbar-title>Nueva Nota de Débito</q-toolbar-title>
-          <q-btn flat round dense icon="close" @click="closeModal" class="text-white"></q-btn>
-        </q-toolbar>
-        <q-card-section class="modal-content">
-          <div>
-            <q-list class="full-width">
-              <q-item-label header>Datos de la Nota de Débito</q-item-label>
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="notaDebito.numero"
-                  type="number"
-                  label="Número de Nota de Débito"
-                ></q-input>
-              </q-item>
-              
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="notaDebito.monto"
-                  type="number"
-                  label="Monto"
-                ></q-input>
-              </q-item>
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="notaDebito.concepto"
-                  label="Concepto"
-                ></q-input>
-              </q-item>
-            </q-list>
-          </div>
-          <q-btn label="Guardar" @click="guardarNotaDebito" class="buttonsave"></q-btn>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-  </template>
-  
-  <script>
-  export default {
-  name: 'DebitoModal',
-  props: {
-    value: Boolean,
-  },
-  data() {
-    return {
-      isOpen: false,
-      notaDebito: {
-        numero: '',
-        fecha: new Date().toISOString().split('T')[0],
-        monto: '',
-        concepto: '',
-      },
-    };
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    guardarNotaDebito() {
-      let notasDebito = this.$q.localStorage.getItem('notasDebito') || [];
+  <q-dialog v-model="isOpen" persistent class="q-pa-md centered-modal">
+    <q-card class="modal-card">
+      <q-toolbar class="navbar">
+        <q-toolbar-title>Nueva Nota de Débito</q-toolbar-title>
+        <q-btn flat round dense icon="close" @click="closeModal" class="text-white"></q-btn>
+      </q-toolbar>
+      <q-card-section class="modal-content">
+        <div>
+          <q-list class="full-width">
+            <q-item-label header>Datos de la Nota de Débito</q-item-label>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaDebito.numero"
+                type="number"
+                label="Número de Nota de Débito"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaDebito.monto"
+                type="number"
+                label="Monto"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaDebito.concepto"
+                label="Concepto"
+              ></q-input>
+            </q-item>
+          </q-list>
+        </div>
+        <q-btn label="Guardar" @click="guardarNotaDebito" class="buttonsave"></q-btn>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+</template>
 
-      const nuevaNotaDebito = {
-        ...this.notaDebito,
-        index: notasDebito.length,
-      };
 
-      notasDebito.push(nuevaNotaDebito);
+<script setup>
+import { ref, computed } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
 
-      this.$q.localStorage.set('notasDebito', notasDebito);
+// Definir props
+// const props = defineProps({
+//   value: Boolean,
+// });
 
-      this.$emit('debito-guardado', nuevaNotaDebito);
+// Crear referencia reactiva para el modal store
+const modalStore = useModalStore();
 
-      this.closeModal();
-    },
+// Computed para controlar el estado del modal
+const isOpen = computed(() => modalStore.debitoIsOpen);
 
-  },
+// Datos de la nota de débito
+const notaDebito = ref({
+  numero: '',
+  fecha: new Date().toISOString().split('T')[0],
+  monto: '',
+  concepto: '',
+});
+
+// Obtener instancia de Quasar
+const $q = useQuasar();
+
+// Definir el método `emit`
+const emit = defineEmits(['debito-guardado']);
+
+// Método para cerrar el modal
+const closeModal = () => {
+  modalStore.toggleDebito(); // Llama a la acción para cerrar el modal
 };
-  </script>
+
+// Método para guardar la nota de débito
+const guardarNotaDebito = () => {
+  let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+
+  const nuevaNotaDebito = {
+    ...notaDebito.value,
+    index: notasDebito.length,
+  };
+
+  notasDebito.push(nuevaNotaDebito);
+
+  $q.localStorage.set('notasDebito', notasDebito);
+
+  // Emitir evento
+  emit('debito-guardado', nuevaNotaDebito);
+
+  closeModal();
+};
+</script>
+
   
   <style scoped>
   .centered-modal {

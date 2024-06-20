@@ -24,39 +24,35 @@
       
       <TicketModal
         ref="ticketModal"
-        @ticket-guardado="actualizarTickets"
+        @ticket-guardado="actualizarTicket"
       />
     </q-page>
   </q-page-container>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
 import TicketModal from '../components/TicketModal.vue';
 
-export default {
-  components: {
-    TicketModal
-  },
-  data() {
-    return {
-      tickets: []
-    };
-  },
-  mounted() {
-    // Cargar los tickets desde el localStorage al iniciar la página
-    const storedTickets = this.$q.localStorage.getItem('tickets');
-    if (storedTickets) {
-      this.tickets = storedTickets;
-    }
+const tickets = ref([]);
 
-  },
-  methods: {
-    openTicketModal() {
-      this.$refs.ticketModal.openModal();
-    },
-    actualizarTickets(nuevoTicket) {
-      this.tickets.push(nuevoTicket);
+const $q = useQuasar();
+
+onMounted(() => {
+    const storedTickets = $q.localStorage.getItem('tickets');
+    if (storedTickets) {
+      tickets.value = storedTickets;
     }
-  }
+});
+
+const openTicketModal = () => {
+    const modalStore = useModalStore();
+    modalStore.toggleTicket();
 };
+
+const actualizarTicket = (nuevoTicket) => {
+    tickets.value.push(nuevoTicket);
+  };
 </script>

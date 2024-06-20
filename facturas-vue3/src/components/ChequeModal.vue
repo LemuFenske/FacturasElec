@@ -40,53 +40,52 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: 'ChequeModal',
-  props: {
-    value: Boolean,
-  },
-  data() {
-    return {
-      isOpen: false,
-      cheque: {
+<script setup>
+import { ref, computed } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
+
+
+const modalStore = useModalStore();
+
+
+const isOpen = computed(() => modalStore.chequeIsOpen);
+
+
+const cheque = ref({
         banco: '',
         numero: '',
         fecha: new Date().toISOString().split('T')[0],
         monto: '',
-      },
-    };
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    guardarCheque() {
-      let cheques = this.$q.localStorage.getItem('cheques') || [];
+});
 
-      if (typeof cheques === 'string') {
-        cheques = JSON.parse(cheques);
-      }
+const $q = useQuasar();
 
-      const nuevoCheque = {
-        ...this.cheque,
-        index: cheques.length,
-      };
+const emit = defineEmits(['cheque-guardado']);
 
-      cheques.push(nuevoCheque);
 
-      this.$q.localStorage.set('cheques', cheques);
-
-      this.$emit('cheque-guardado', nuevoCheque);
-
-     
-      this.closeModal();
-    },
-  },
+const closeModal = () => {
+  modalStore.toggleCheque(); 
 };
+
+const guardarCheque = () => {
+  let cheques = $q.localStorage.getItem('cheques') || [];
+
+  const nuevoCheque = {
+    ...cheque.value,
+    index: cheques.length,
+  };
+
+  cheques.push(nuevoCheque);
+
+  $q.localStorage.set('cheques', cheques);
+
+  // Emitir evento
+  emit('cheque-guardado', nuevoCheque);
+
+  closeModal();
+};
+
 </script>
 
 <style scoped>

@@ -80,58 +80,91 @@
   </q-dialog>
 </template>
 
-<script>
-// import {useQuasar} from 'quasar'
 
-// const $q = useQuasar
-export default {
-  name: 'EmpresaModal',
-  props: {
-    empresa: {
-      type: Object,
-      default: () => ({})
-    }
-  },
-  data() {
-    return {
-      isOpen: false,
-      empresaLocal: {
-        razonSocial: '',
-        nombre: '',
-        cuit: '',
-        direccion: '',
-        condIva: '',
-        ingBrutos: '',
-        fechaInicio: new Date().toISOString().split('T')[0], 
-      },
-      opcionesIva: [
-        'Responsable Inscripto',
-        'Monotributista',
-        'Exento',
-        'No Responsable',
-        'Consumidor Final'
-      ],
-    };
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-      if (this.empresa) {
-        this.empresaLocal = { ...this.empresa };
-      }
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    guardarEmpresa() {
-      const empresaData = { ...this.empresaLocal };
-      this.$q.localStorage.set('empresa', empresaData);
-      this.$emit('empresa-guardada', empresaData);
-      this.closeModal();
-    }
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useModalStore } from '../stores/modalVariables.js';
+
+// Props
+const props = defineProps({
+  empresa: {
+    type: Object,
+    default: () => ({})
+  }
+});
+
+
+const empresaLocal = ref({
+  razonSocial: '',
+  nombre: '',
+  cuit: '',
+  direccion: '',
+  condIva: '',
+  ingBrutos: '',
+  fechaInicio: new Date().toISOString().split('T')[0]
+});
+
+const opcionesIva = ref([
+  'Responsable Inscripto',
+  'Monotributista',
+  'Exento',
+  'No Responsable',
+  'Consumidor Final'
+]);
+
+
+const $q = useQuasar();
+
+const emit = defineEmits(['empresa-guardada']);
+
+
+const isOpen = computed(() => {
+  const modalStore = useModalStore();
+  return modalStore.empresaIsOpen;
+});
+
+// Watcher para cargar los datos de la empresa cuando el modal se abre
+watch(isOpen, (newValue) => {
+  if (newValue) {
+    loadEmpresaData();
+  }
+});
+
+
+const closeModal = () => {
+  const modalStore = useModalStore();
+  modalStore.toggleEmpresa();
+};
+
+
+const guardarEmpresa = () => {
+  const empresaData = { ...empresaLocal.value };
+  $q.localStorage.set('empresa', empresaData);
+  emit('empresa-guardada', empresaData);
+  closeModal();
+};
+
+
+const loadEmpresaData = () => {
+  const storedEmpresa = $q.localStorage.getItem('empresa');
+  if (storedEmpresa) {
+    empresaLocal.value = storedEmpresa;
+  } else if (props.empresa) {
+    empresaLocal.value = { ...props.empresa };
   }
 };
+
+
+onMounted(() => {
+  loadEmpresaData();
+});
 </script>
+
+
+
+
+
 
 <style scoped>
 .centered-modal {

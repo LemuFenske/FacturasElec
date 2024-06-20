@@ -33,33 +33,35 @@
     </q-page-container>
   </template>
   
-  <script>
+  <script setup>
+  import { ref, onMounted } from 'vue';
+  import { useModalStore } from '../stores/modalVariables.js';
+  import { useQuasar } from 'quasar';
   import ChequeModal from '../components/ChequeModal.vue';
-  
-  export default {
-    components: {
-      ChequeModal
-    },
-    data() {
-      return {
-        cheques: []
-      };
-    },
-    mounted() {
-      const storedCheques = this.$q.localStorage.getItem('cheques');
-      if (storedCheques) {
-      this.cheques = storedCheques;
-      }
 
-    },
-    methods: {
-      openChequeModal() {
-        this.$refs.chequeModal.openModal();
-      },
-      actualizarCheque(nuevoCheque) {
-      this.cheques.push(nuevoCheque);
+  const cheques = ref([]);
+
+
+  const $q = useQuasar();
+
+  
+
+  onMounted(() => {
+    const storedCheques = $q.localStorage.getItem('cheques');
+    if (storedCheques) {
+      cheques.value = storedCheques;
     }
-    }
+  });
+
+
+  const openChequeModal = () => {
+    const modalStore = useModalStore();
+    modalStore.toggleCheque();
+  };
+
+
+  const actualizarCheque = (nuevoCheque) => {
+    cheques.value.push(nuevoCheque);
   };
   </script>
   

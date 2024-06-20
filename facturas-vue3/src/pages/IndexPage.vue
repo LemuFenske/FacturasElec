@@ -1,7 +1,8 @@
 <template>
   <q-page-container>
     <q-page class="page-content">
-      <q-btn
+      <h1>Página de Inicio</h1>
+      <!-- <q-btn
         label="Empresa"
         icon="apartment"
         class="btn-square no-print"
@@ -71,58 +72,58 @@
       
       <NuevoChequeModal
         ref="chequeModal"
-      />
+      /> -->
     </q-page>
   </q-page-container>
 </template>
 
 <script>
-import EmpresaModal from '../components/EmpresaModal.vue'; 
-import NuevaFacturaModal from '../components/NuevaFacturaModal.vue';
-import NuevoTicketModal from '../components/TicketModal.vue';
-import NuevaNotaCreditoModal from '../components/CreditoModal.vue';
-import NuevaNotaDebitoModal from '../components/DebitoModal.vue';
-import NuevoChequeModal from '../components/ChequeModal.vue';
+// import EmpresaModal from '../components/EmpresaModal.vue'; 
+// import NuevaFacturaModal from '../components/NuevaFacturaModal.vue';
+// import NuevoTicketModal from '../components/TicketModal.vue';
+// import NuevaNotaCreditoModal from '../components/CreditoModal.vue';
+// import NuevaNotaDebitoModal from '../components/DebitoModal.vue';
+// import NuevoChequeModal from '../components/ChequeModal.vue';
 
-export default {
-  components: {
-    EmpresaModal,
-    NuevaFacturaModal,
-    NuevoTicketModal,
-    NuevaNotaCreditoModal,
-    NuevaNotaDebitoModal,
-    NuevoChequeModal,
-  },
+// export default {
+//   components: {
+//     EmpresaModal,
+//     NuevaFacturaModal,
+//     NuevoTicketModal,
+//     NuevaNotaCreditoModal,
+//     NuevaNotaDebitoModal,
+//     NuevoChequeModal,
+//   },
   
-  data() {
-    return {
-      showTicket: false,
-      showNotaCredito: false,
-      showNotaDebito: false,
-      showCheque: false,
-    };
-  },
-  methods: {
-    openEmpresaModal() {
-      this.$refs.empresaModal.openModal();
-    },
-    openFacturaModal() {
-      this.$refs.facturaModal.openModal();
-    },
-    openTicketModal() {
-      this.$refs.ticketModal.openModal();
-    },
-    openCreditoModal() {
-      this.$refs.creditoModal.openModal();
-    },
-    openDebitoModal() {
-      this.$refs.debitoModal.openModal();
-    },
-    openChequeModal() {
-      this.$refs.chequeModal.openModal();
-    },
-  },
-};
+//   data() {
+//     return {
+//       showTicket: false,
+//       showNotaCredito: false,
+//       showNotaDebito: false,
+//       showCheque: false,
+//     };
+//   },
+//   methods: {
+//     openEmpresaModal() {
+//       this.$refs.empresaModal.openModal();
+//     },
+//     openFacturaModal() {
+//       this.$refs.facturaModal.openModal();
+//     },
+//     openTicketModal() {
+//       this.$refs.ticketModal.openModal();
+//     },
+//     openCreditoModal() {
+//       this.$refs.creditoModal.openModal();
+//     },
+//     openDebitoModal() {
+//       this.$refs.debitoModal.openModal();
+//     },
+//     openChequeModal() {
+//       this.$refs.chequeModal.openModal();
+//     },
+//   },
+// };
 </script>
 
 <style>

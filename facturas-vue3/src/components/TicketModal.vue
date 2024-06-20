@@ -33,49 +33,45 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: 'TicketModal',
-  props: {
-    value: Boolean,
-  },
-  data() {
-    return {
-      isOpen: false,
-      ticket: {
+<script setup>
+import { ref, computed } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
+
+
+const modalStore = useModalStore();
+
+const isOpen = computed(() => modalStore.ticketIsOpen);
+
+const ticket = ref({
         numero: '',
         fecha: new Date().toISOString().split('T')[0], 
         monto: '',
-      },
-    };
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    guardarTicket() {
-      let tickets = this.$q.localStorage.getItem('tickets') || [];
+});
 
-      const nuevoTicket = {
-        ...this.ticket,
-        index: tickets.length,
-      };
+const $q = useQuasar();
 
-      tickets.push(nuevoTicket);
+const emit = defineEmits(['ticket-guardado']);
 
-      this.$q.localStorage.set('tickets', tickets);
+const closeModal = () => {
+  modalStore.toggleTicket(); 
+};
 
-      console.log('Ticket guardado', nuevoTicket);
+const guardarTicket = () => {
+  let tickets = $q.localStorage.getItem('tickets') || [];
 
-      this.$emit('ticket-guardado', nuevoTicket);
+  const nuevoTicket = {
+    ...ticket.value,
+    index: tickets.length,
+  };
 
-      this.closeModal();
-    },
+  tickets.push(nuevoTicket);
 
-  },
+  $q.localStorage.set('tickets', tickets);
+
+  emit('ticket-guardado', nuevoTicket);
+
+  closeModal();
 };
 </script>
 

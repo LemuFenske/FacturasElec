@@ -36,7 +36,42 @@
     </q-page-container>
   </template>
   
-  <script>
+
+
+  <script setup>
+  import { ref, onMounted } from 'vue';
+  import { useModalStore } from '../stores/modalVariables.js';
+  import { useQuasar } from 'quasar';
+  import DebitoModal from '../components/DebitoModal.vue';
+
+  // Crear referencia reactiva para debitos
+  const debitos = ref([]);
+
+  // Obtener instancia de Quasar
+  const $q = useQuasar();
+
+  // Ejecutar al montar el componente
+  onMounted(() => {
+    const storedDebitos = $q.localStorage.getItem('notasDebito');
+    if (storedDebitos) {
+      debitos.value = storedDebitos;
+    }
+  });
+
+  // Método para abrir el modal de debito
+  const openDebitoModal = () => {
+    const modalStore = useModalStore();
+    modalStore.toggleDebito();
+  };
+
+  // Método para actualizar el debito
+  const actualizarDebito = (nuevaNotaDebito) => {
+    debitos.value.push(nuevaNotaDebito);
+  };
+  </script>
+
+  <!-- <script>
+import { useModalStore } from '../stores/modalVariables.js'; 
   import DebitoModal from '../components/DebitoModal.vue';
   
   export default {
@@ -57,12 +92,13 @@
     },
     methods: {
       openDebitoModal() {
-        this.$refs.debitoModal.openModal();
+        const modalStore = useModalStore();
+        modalStore.toggleDebito();
       },
       actualizarDebito(nuevaNotaDebito) {
         this.debitos.push(nuevaNotaDebito);
       }
     }
   };
-  </script>
+  </script> -->
   

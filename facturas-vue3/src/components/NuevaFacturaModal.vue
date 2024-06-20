@@ -145,99 +145,110 @@
 </template>
 
 
-<script>
-import { computed } from 'vue';
+<script setup>
+import { ref, computed } from 'vue';
+import { useQuasar } from 'quasar';
+import { useModalStore } from '../stores/modalVariables.js';
 
-export default {
-  name: 'NuevaFacturaModal',
-  data() {
-    return {
-      isOpen: false,
-      factura: {
-        condTipo: '',
-        ptoVenta: '',
-        numero: '',
-        fecha: new Date().toISOString().split('T')[0],
-        condVenta: '',
-        cliente: {
-          cuit: '',
-          nombre: '',
-          direccion: '',
-          condIva: '',
-        },
-        productosFactura: [
-          {
-            nombre: '',
-            cantidad: 0,
-            precio: 0,
-            unidad: '',
-          },
-        ],
-      },
-      opcionesTipo: ['A', 'B', 'C'],
-      opcionesCondVenta: ['Contado', 'Crédito'],
-      opcionesIvaCliente: ['Responsable Inscripto', 'Monotributista', 'Exento', 'No Responsable', 'Consumidor Final'],
-      opcionesUnidades: ['Unidad', 'Kg', 'Litro'],
-      ivaPorcentaje: 21, // Porcentaje de IVA
-    };
+
+const modalStore = useModalStore();
+
+// Computed para controlar el estado del modal
+const isOpen = computed(() => modalStore.facturaIsOpen);
+
+// Datos de la factura
+const factura = ref({
+  condTipo: '',
+  ptoVenta: '',
+  numero: '',
+  fecha: new Date().toISOString().split('T')[0],
+  condVenta: '',
+  cliente: {
+    cuit: '',
+    nombre: '',
+    direccion: '',
+    condIva: '',
   },
-  computed: {
-    subtotal() {
-      return this.factura.productosFactura.reduce((sum, producto) => sum + producto.precio * producto.cantidad, 0);
+  productosFactura: [
+    {
+      nombre: '',
+      cantidad: 0,
+      precio: 0,
+      unidad: '',
     },
-    iva() {
-      return this.subtotal * (this.ivaPorcentaje / 100);
-    },
-    total() {
-      return this.subtotal + this.iva;
-    },
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    formatPtoVenta(event) {
-      const val = event.target.value;
-      this.factura.ptoVenta = ('0000' + val).substr(-4);
-    },
-    formatNumero(event) {
-      const val2 = event.target.value;
-      this.factura.numero = ('00000000' + val2).substr(-8);
-    },
-    guardarFactura() {
-      let facturas = this.$q.localStorage.getItem('facturas') || [];
+  ],
+});
 
-      const nuevaFactura = {
-        ...this.factura,
-        subtotal: this.subtotal,
-        iva: this.iva,
-        total: this.total,
-        index: facturas.length,
-        editable: true,
-      };
 
-      facturas.push(nuevaFactura);
+const opcionesTipo = ['A', 'B', 'C'];
+const opcionesCondVenta = ['Contado', 'Crédito'];
+const opcionesIvaCliente = ['Responsable Inscripto', 'Monotributista', 'Exento', 'No Responsable', 'Consumidor Final'];
+const opcionesUnidades = ['Unidad', 'Kg', 'Litro'];
+const ivaPorcentaje = 21; 
 
-      this.$q.localStorage.set('facturas', facturas);
 
-      this.$emit('factura-guardada', nuevaFactura);
+const subtotal = computed(() =>
+  factura.value.productosFactura.reduce((sum, producto) => sum + producto.precio * producto.cantidad, 0)
+);
+const iva = computed(() => subtotal.value * (ivaPorcentaje / 100));
+const total = computed(() => subtotal.value + iva.value);
 
-      this.closeModal();
-    },
 
-    agregarProducto() {
-      this.factura.productosFactura.push({
-        nombre: '',
-        cantidad: 0,
-        precio: 0,
-        unidad: '',
-      });
-    },
-  },
+const $q = useQuasar();
+
+
+const emit = defineEmits(['factura-guardada']);
+
+
+const closeModal = () => {
+  modalStore.toggleFactura(); 
 };
+
+// Método para guardar la factura
+const guardarFactura = () => {
+  let facturas = $q.localStorage.getItem('facturas') || [];
+
+  const nuevaFactura = {
+    ...factura.value,
+    subtotal: subtotal.value,
+    iva: iva.value,
+    total: total.value,
+    index: facturas.length,
+    editable: true,
+  };
+
+  facturas.push(nuevaFactura);
+
+  $q.localStorage.set('facturas', facturas);
+
+  // Emitir evento
+  emit('factura-guardada', nuevaFactura);
+
+  closeModal();
+};
+
+// Método para formatear punto de venta
+const formatPtoVenta = (event) => {
+  const val = event.target.value;
+  factura.value.ptoVenta = ('0000' + val).substr(-4);
+};
+
+// Método para formatear número de factura
+const formatNumero = (event) => {
+  const val2 = event.target.value;
+  factura.value.numero = ('00000000' + val2).substr(-8);
+};
+
+
+const agregarProducto = () => {
+  factura.value.productosFactura.push({
+    nombre: '',
+    cantidad: 0,
+    precio: 0,
+    unidad: '',
+  });
+};
+
 </script>
 
 

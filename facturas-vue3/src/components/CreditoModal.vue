@@ -40,48 +40,52 @@
   </q-dialog>
 </template>
 
-<script>
-export default {
-  name: 'CreditoModal',
-  props: {
-    value: Boolean,
-  },
-  data() {
-    return {
-      isOpen: false,
-      notaCredito: {
-        numero: '',
-        fecha: new Date().toISOString().split('T')[0], 
-        monto: '',
-        concepto: '',
-      },
-    };
-  },
-  methods: {
-    openModal() {
-      this.isOpen = true;
-    },
-    closeModal() {
-      this.isOpen = false;
-    },
-    guardarNotaCredito() {
-      let notasCredito = this.$q.localStorage.getItem('notasCredito') || [];
+<script setup>
+import { ref, computed } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
 
-      const nuevaNotaCredito = {
-      ...this.notaCredito,
-      index: notasCredito.length,
-      };
 
-      notasCredito.push(nuevaNotaCredito);
+const modalStore = useModalStore();
 
-      this.$q.localStorage.set('notasCredito', notasCredito);
 
-      this.$emit('credito-guardado', nuevaNotaCredito);
+const isOpen = computed(() => modalStore.creditoIsOpen);
 
-      this.closeModal();
-    },
 
-  },
+const notaCredito = ref({
+  numero: '',
+  fecha: new Date().toISOString().split('T')[0],
+  monto: '',
+  concepto: '',
+});
+
+
+const $q = useQuasar();
+
+
+const emit = defineEmits(['credito-guardado']);
+
+
+const closeModal = () => {
+  modalStore.toggleCredito(); 
+};
+
+const guardarNotaCredito = () => {
+  let notasCredito = $q.localStorage.getItem('notasCredito') || [];
+
+  const nuevaNotaCredito = {
+    ...notaCredito.value,
+    index: notasCredito.length,
+  };
+
+  notasCredito.push(nuevaNotaCredito);
+
+  $q.localStorage.set('notasCredito', notasCredito);
+
+
+  emit('credito-guardado', nuevaNotaCredito);
+
+  closeModal();
 };
 </script>
 

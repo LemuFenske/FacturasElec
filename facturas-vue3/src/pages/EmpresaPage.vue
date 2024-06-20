@@ -118,68 +118,69 @@
   </q-page-container>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useQuasar } from 'quasar';
+import { useModalStore } from '../stores/modalVariables.js';
 import EmpresaModal from '../components/EmpresaModal.vue';
 
-export default {
-  components: {
-    EmpresaModal
-  },
-  data() {
-    return {
-      empresa: {},
-      facturas: [],
-      notasCredito: [],
-      notasDebito: [],
-      tickets: [],
-      cheques: []
-    };
-  },
-  mounted() {
-  // Cargar los datos desde el localStorage al iniciar la página
-  const storedEmpresa = this.$q.localStorage.getItem('empresa');
+
+const empresa = ref({});
+const facturas = ref([]);
+const notasCredito = ref([]);
+const notasDebito = ref([]);
+const tickets = ref([]);
+const cheques = ref([]);
+
+
+const $q = useQuasar();
+
+
+onMounted(() => {
+  const storedEmpresa = $q.localStorage.getItem('empresa');
   if (storedEmpresa) {
-    this.empresa = storedEmpresa;
+    empresa.value = storedEmpresa;
   }
 
-  const storedFacturas = this.$q.localStorage.getItem('facturas');
+  const storedFacturas = $q.localStorage.getItem('facturas');
   if (storedFacturas) {
-    this.facturas = storedFacturas;
+    facturas.value = storedFacturas;
   }
 
-  const storedNotasCredito = this.$q.localStorage.getItem('notasCredito');
+  const storedNotasCredito = $q.localStorage.getItem('notasCredito');
   if (storedNotasCredito) {
-    this.notasCredito = storedNotasCredito;
+    notasCredito.value = storedNotasCredito;
   }
 
-  const storedNotasDebito = this.$q.localStorage.getItem('notasDebito');
+  const storedNotasDebito = $q.localStorage.getItem('notasDebito');
   if (storedNotasDebito) {
-    this.notasDebito = storedNotasDebito;
+    notasDebito.value = storedNotasDebito;
   }
 
-  const storedTickets = this.$q.localStorage.getItem('tickets');
+  const storedTickets = $q.localStorage.getItem('tickets');
   if (storedTickets) {
-    this.tickets = storedTickets;
+    tickets.value = storedTickets;
   }
 
-  const storedCheques = this.$q.localStorage.getItem('cheques');
+  const storedCheques = $q.localStorage.getItem('cheques');
   if (storedCheques) {
-    this.cheques = storedCheques;
+    cheques.value = storedCheques;
   }
-},
+});
 
 
-  methods: {
-    openEmpresaModal() {
-      this.$refs.empresaModal.openModal();
-    },
-    mostrarEmpresa(empresaData) {
-    this.empresa = empresaData;
-    this.$q.localStorage.set('empresa', empresaData);
-}
-  }
+const openEmpresaModal = () => {
+  const modalStore = useModalStore();
+  modalStore.toggleEmpresa();
+};
+
+
+const mostrarEmpresa = (empresaData) => {
+  empresa.value = empresaData;
+  $q.localStorage.set('empresa', empresaData);
 };
 </script>
+
 
 <style scoped>
 .pagecontainer {
