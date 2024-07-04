@@ -37,10 +37,10 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
 
 // Listen for messages from the client
 self.addEventListener('message', (event) => {
-  console.log('Message received in service worker:', event.data); // Agrega un console.log para verificar
+  console.log('Message received in service worker:', event.data);
   if (event.data && event.data.type === 'GET_VERSION') {
     event.ports[0].postMessage({ version: VERSION });
-    console.log('Version sent:', VERSION); // Agrega otro console.log para verificar
+    console.log('Version sent:', VERSION); 
   }
 });
 
