@@ -21,6 +21,11 @@
                   <div><strong>Concepto:</strong> {{ nota.concepto }}</div>
                 </div>
               </q-item-section>
+              <q-item-section>
+              <q-btn icon="visibility" @click="verPDF(nota)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion(nota)" flat></q-btn>
+              <q-btn icon="save" @click="guardarPDF(nota)" flat></q-btn>
+            </q-item-section>
             </q-item>
           </q-list>
         </div>
@@ -39,11 +44,13 @@
   import { ref, onMounted } from 'vue';
   import { useModalStore } from '../stores/modalVariables.js';
   import CreditoModal from '../components/CreditoModal.vue';
+  import { usePdfStore } from '../stores/pdf.js';
   
   const creditos = ref([]);
 
   // Obtener instancia de Quasar
   const $q = useQuasar(); 
+  const pdfStore = usePdfStore();
 
   onMounted(() => {
     const storedCreditos = $q.localStorage.getItem('notasCredito');
@@ -59,33 +66,22 @@
 
   const actualizarCredito = (nuevaNotaCredito) => {
     creditos.value.push(nuevaNotaCredito);
+    $q.localStorage.set('notasCredito', creditos.value);
   };
 
-  // export default {
-  //   components: {
-  //     CreditoModal
-  //   },
-  //   data() {
-  //     return {
-  //       notasCredito: []
-  //     };
-  //   },
-  //   mounted() {
-     
-  //     const storedNotasCredito = this.$q.localStorage.getItem('notasCredito');
-  //     if (storedNotasCredito) {
-  //       this.notasCredito = storedNotasCredito;
-  //     }
+  const verPDF = (credito) => {
+  pdfStore.verPDF('credito', credito);
+};
 
-  //   },
-  //   methods: {
-  //     openCreditoModal() {
-  //       this.$refs.creditoModal.openModal();
-  //     },
-  //     actualizarCredito(nuevaNotaCredito) {
-  //     this.notasCredito.push(nuevaNotaCredito);
-  //   }
-  //   }
-  // };
+
+
+const prepImpresion = (credito) => {
+  pdfStore.prepImpresion('credito', credito);
+};
+
+
+const guardarPDF = (credito) =>  {
+  pdfStore.guardarPDF('credito', credito);
+};
   </script>
   

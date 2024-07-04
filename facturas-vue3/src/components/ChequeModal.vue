@@ -12,13 +12,6 @@
             <q-item>
               <q-input
                 class="full-width"
-                v-model="cheque.banco"
-                label="Banco"
-              ></q-input>
-            </q-item>
-            <q-item>
-              <q-input
-                class="full-width"
                 v-model="cheque.numero"
                 type="number"
                 label="Número de Cheque"
@@ -27,9 +20,67 @@
             <q-item>
               <q-input
                 class="full-width"
-                v-model="cheque.monto"
+                v-model="cheque.banco"
+                label="Banco"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.domicilioPago"
+                label="Domicilio de Pago"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.ciudad"
+                label="Ciudad"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.dia"
                 type="number"
-                label="Monto"
+                label="Día"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.mes"
+                label="Mes (escrito)"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.ano"
+                type="number"
+                label="Año"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.receptor"
+                label="Receptor"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.montoNumero"
+                type="number"
+                label="Monto (Número)"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="cheque.montoEscrito"
+                label="Monto (Escrito)"
               ></q-input>
             </q-item>
           </q-list>
@@ -45,24 +96,26 @@ import { ref, computed } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 
-
 const modalStore = useModalStore();
-
 
 const isOpen = computed(() => modalStore.chequeIsOpen);
 
-
 const cheque = ref({
-        banco: '',
-        numero: '',
-        fecha: new Date().toISOString().split('T')[0],
-        monto: '',
+  numero: '',
+  banco: '',
+  domicilioPago: '',
+  ciudad: '',
+  dia: '',
+  mes: '',
+  ano: '',
+  receptor: '',
+  montoNumero: '',
+  montoEscrito: '',
 });
 
 const $q = useQuasar();
 
 const emit = defineEmits(['cheque-guardado']);
-
 
 const closeModal = () => {
   modalStore.toggleCheque(); 
@@ -85,7 +138,6 @@ const guardarCheque = () => {
 
   closeModal();
 };
-
 </script>
 
 <style scoped>

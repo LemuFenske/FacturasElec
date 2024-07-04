@@ -73,6 +73,37 @@
     <q-drawer v-model="rightDrawerOpen" show-if-above bordered class="right-drawer" side="right">
       <q-list>
         <q-item-label header>Información</q-item-label>
+        <q-item>
+          <q-item-section>
+            <q-btn @click="installPWA">Instalar PWA</q-btn>
+          </q-item-section>
+          
+        </q-item>
+        <q-item>
+        <q-item-section>
+            <q-btn @click="clearCacheAndStorage">Actualizar</q-btn>
+          </q-item-section>
+        </q-item>
+          <q-item v-if="swVersion">
+          <q-item-section>
+            <div>Versión (con mensaje): {{ swVersion }}</div>
+          </q-item-section>
+        </q-item>
+        <q-item v-if="!swVersion">
+          <q-item-section>
+            <div>Versión (con mensaje): Cargando...</div>
+          </q-item-section>
+        </q-item>
+        <q-item v-if="jsonVersion">
+          <q-item-section>
+            <div>Versión (JSON): {{ jsonVersion }}</div>
+          </q-item-section>
+        </q-item>
+        <q-item v-if="!jsonVersion">
+          <q-item-section>
+            <div>Versión (JSON): Cargando...</div>
+          </q-item-section>
+        </q-item>
       </q-list>
     </q-drawer>
 
@@ -83,12 +114,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const leftDrawerOpen = ref(false)
 const rightDrawerOpen = ref(false)
+const swVersion = ref('')
+const jsonVersion = ref('')
 const router = useRouter()
+let deferredPrompt
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
@@ -101,11 +135,81 @@ function toggleRightDrawer() {
 function navigateTo(route) {
   router.push(route)
 }
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  deferredPrompt = e
+})
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt()
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the A2HS prompt')
+      } else {
+        console.log('User dismissed the A2HS prompt')
+      }
+      deferredPrompt = null
+    })
+  }
+}
+
+function fetchVersionFromSW() {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' })
+  }
+}
+
+// Escuchar los mensajes del service worker
+window.addEventListener('message', (event) => {
+  if (event.data && event.data.version) {
+    swVersion.value = event.data.version
+  }
+})
+
+// Obtener la versión desde version.json
+function fetchVersionFromJSON() {
+  fetch('/facturas-test/version.json')
+    .then(response => response.json())
+    .then(data => {
+      jsonVersion.value = data.version
+    })
+    .catch(error => console.error('Error fetching version:', error))
+}
+
+// Función para limpiar caché y almacenamiento local
+async function clearCacheAndStorage() {
+  try {
+    // Clear local storage
+    localStorage.clear()
+    
+    // Clear cache storage
+    if ('caches' in window) {
+      const cacheNames = await caches.keys()
+      await Promise.all(cacheNames.map(name => caches.delete(name)))
+    }
+    
+    // Optionally, reload the page
+    window.location.reload(true)
+  } catch (error) {
+    console.error("Error clearing cache and storage:", error)
+  }
+}
+
+// Obtener ambas versiones al montar el componente
+onMounted(() => {
+  fetchVersionFromSW()
+  fetchVersionFromJSON()
+})
 </script>
+
+
+
 
 <style>
 .navbar {
-  background-color: rgb(117, 255, 188);
+  background-color: rgb(66, 221, 146);
   color: black;
 }
 
@@ -114,6 +218,7 @@ function navigateTo(route) {
 }
 
 .right-drawer {
+  margin-top: 0;
   background-color: rgb(170, 255, 214);
 }
 

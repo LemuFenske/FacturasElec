@@ -1,8 +1,7 @@
 <template>
   <q-page-container>
-    <q-page class="pagecontainer">
-       
-      <div class="buttonmodal">
+    <q-page class="page-container">
+      <div class="button-modal">
         <q-btn
           label="Crear/Editar Empresa"
           icon="apartment"
@@ -14,101 +13,116 @@
       </div>
 
       <!-- Sección de datos de la empresa -->
-      <div v-if="empresa && Object.keys(empresa).length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Datos de la Empresa</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="(value, key) in empresa" :key="key" class="col q-pa-sm">
-          <q-item-section>{{ key }}</q-item-section>
-          <q-item-section>{{ value }}</q-item-section>
+      <div v-if="empresa && Object.keys(empresa).length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Datos de la Empresa</q-item-label>
+        <div class="info-box">
+          <div><strong>Nombre:</strong> {{ empresa.nombre }}</div>
+          <div><strong>Dirección:</strong> {{ empresa.direccion }}</div>
+          <div><strong>Cuit:</strong> {{ empresa.cuit }}</div>
+          <div><strong>Condición de IVA:</strong> {{ empresa.condIva }}</div>
+          <div><strong>Fecha de Inicio:</strong> {{ empresa.fechaInicio }}</div>
+          <div><strong>Ingresos Brutos:</strong> {{ empresa.ingBrutos }}</div>
+          <div><strong>Razón Social:</strong> {{ empresa.razonSocial }}</div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
       <!-- Sección de facturas -->
-      <div v-if="facturas.length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Facturas de la Empresa {{ empresa.nombre }}</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="factura in facturas" :key="factura.numero" class="col q-pa-sm">
-          <q-item-section>Factura N°: {{ factura.numero }}</q-item-section>
-          <q-item-section>Fecha: {{ factura.fecha }}</q-item-section>
-          <q-item-section>Total: {{ factura.monto }}</q-item-section>
+      <div v-if="facturas.length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Facturas de la Empresa {{ empresa.nombre }}</q-item-label>
+        <div class="info-box">
+          <div v-for="factura in facturas" :key="factura.numero" class="info-item">
+            <div class="info-text">
+              <div><strong>Factura N°:</strong> {{ factura.numero }}</div>
+              <div><strong>Fecha:</strong> {{ factura.fecha }}</div>
+              <div><strong>Total:</strong> {{ factura.total }}</div>
+            </div>
+            <div class="button-container">
+              <q-btn icon="save" @click="guardarPDF('factura', factura)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion('factura', factura)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF('factura', factura)" flat></q-btn>
+            </div>
+          </div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
-<div v-if="notasCredito.length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Notas de Crédito de la Empresa {{ empresa.nombre }}</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="nota in notasCredito" :key="nota.numero" class="col q-pa-sm">
-          <q-item-section>Nota N°: {{ nota.numero }}</q-item-section>
-          <q-item-section>Fecha: {{ nota.fecha }}</q-item-section>
-          <q-item-section>Monto: {{ nota.monto }}</q-item-section>
-          <q-item-section>Concepto: {{ nota.concepto }}</q-item-section>
+      <!-- Sección de notas de crédito -->
+      <div v-if="notasCredito.length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Notas de Crédito de la Empresa {{ empresa.nombre }}</q-item-label>
+        <div class="info-box">
+          <div v-for="nota in notasCredito" :key="nota.numero" class="info-item">
+            <div class="info-text">
+              <div><strong>Nota N°:</strong> {{ nota.numero }}</div>
+              <div><strong>Fecha:</strong> {{ nota.fecha }}</div>
+              <div><strong>Monto:</strong> {{ nota.monto }}</div>
+              <div><strong>Concepto:</strong> {{ nota.concepto }}</div>
+            </div>
+            <div class="button-container">
+              <q-btn icon="save" @click="guardarPDF('credito', nota)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion('credito', nota)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF('credito', nota)" flat></q-btn>
+            </div>
+          </div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
-<div v-if="notasDebito.length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Notas de Débito de la Empresa {{ empresa.nombre }}</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="nota in notasDebito" :key="nota.numero" class="col q-pa-sm">
-          <q-item-section>Nota N°: {{ nota.numero }}</q-item-section>
-          <q-item-section>Fecha: {{ nota.fecha }}</q-item-section>
-          <q-item-section>Monto: {{ nota.monto }}</q-item-section>
-          <q-item-section>Concepto: {{ nota.concepto }}</q-item-section>
+      <!-- Sección de notas de débito -->
+      <div v-if="notasDebito.length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Notas de Débito de la Empresa {{ empresa.nombre }}</q-item-label>
+        <div class="info-box">
+          <div v-for="nota in notasDebito" :key="nota.numero" class="info-item">
+            <div class="info-text">
+              <div><strong>Nota N°:</strong> {{ nota.numero }}</div>
+              <div><strong>Fecha:</strong> {{ nota.fecha }}</div>
+              <div><strong>Monto:</strong> {{ nota.monto }}</div>
+              <div><strong>Concepto:</strong> {{ nota.concepto }}</div>
+            </div>
+            <div class="button-container">
+              <q-btn icon="save" @click="guardarPDF('debito', nota)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion('debito', nota)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF('debito', nota)" flat></q-btn>
+            </div>
+          </div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
-<div v-if="tickets.length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Tickets de la Empresa {{ empresa.nombre }}</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="ticket in tickets" :key="ticket.numero" class="col q-pa-sm">
-          <q-item-section>Ticket N°: {{ ticket.numero }}</q-item-section>
-          <q-item-section>Fecha: {{ ticket.fecha }}</q-item-section>
-          <q-item-section>Monto: {{ ticket.monto }}</q-item-section>
+      <!-- Sección de tickets -->
+      <div v-if="tickets.length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Tickets de la Empresa {{ empresa.nombre }}</q-item-label>
+        <div class="info-box">
+          <div v-for="ticket in tickets" :key="ticket.numero" class="info-item">
+            <div class="info-text">
+              <div><strong>Ticket N°:</strong> {{ ticket.numero }}</div>
+              <div><strong>Fecha:</strong> {{ ticket.fecha }}</div>
+              <div><strong>Monto:</strong> {{ ticket.monto }}</div>
+            </div>
+            <div class="button-container">
+              <q-btn icon="save" @click="guardarPDF('ticket', ticket)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion('ticket', ticket)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF('ticket', ticket)" flat></q-btn>
+            </div>
+          </div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
-<div v-if="cheques.length" class="datos">
-  <q-list bordered class="q-pa-sm mb-6">
-    <q-item-label header>Cheques de la Empresa {{ empresa.nombre }}</q-item-label>
-    <q-item>
-      <div class="row">
-        <div v-for="cheque in cheques" :key="cheque.numero" class="col q-pa-sm">
-          <q-item-section>Banco: {{ cheque.banco }}</q-item-section>
-          <q-item-section>Número: {{ cheque.numero }}</q-item-section>
-          <q-item-section>Fecha: {{ cheque.fecha }}</q-item-section>
-          <q-item-section>Monto: {{ cheque.monto }}</q-item-section>
+      <!-- Sección de cheques -->
+      <div v-if="cheques.length" class="info-container q-pa-md mb-6">
+        <q-item-label header class="info-header">Cheques de la Empresa {{ empresa.nombre }}</q-item-label>
+        <div class="info-box">
+          <div v-for="cheque in cheques" :key="cheque.numero" class="info-item">
+            <div class="info-text">
+              <div><strong>Número de cheque:</strong> {{ cheque.numero }}</div>
+              <div><strong>Monto:</strong> ${{ cheque.montoNumero }}</div>
+              <div><strong>Receptor:</strong> {{ cheque.receptor }}</div>
+            </div>
+            <div class="button-container">
+              <q-btn icon="save" @click="guardarPDF('cheque', cheque)" flat></q-btn>
+              <q-btn icon="print" @click="prepImpresion('cheque', cheque)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF('cheque', cheque)" flat></q-btn>
+            </div>
+          </div>
         </div>
       </div>
-    </q-item>
-  </q-list>
-</div>
 
-
-      
       <EmpresaModal
         ref="empresaModal"
         :empresa="empresa"
@@ -123,7 +137,7 @@ import { ref, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 import { useModalStore } from '../stores/modalVariables.js';
 import EmpresaModal from '../components/EmpresaModal.vue';
-
+import { usePdfStore } from 'src/stores/pdf.js';
 
 const empresa = ref({});
 const facturas = ref([]);
@@ -132,9 +146,8 @@ const notasDebito = ref([]);
 const tickets = ref([]);
 const cheques = ref([]);
 
-
 const $q = useQuasar();
-
+const pdfStore = usePdfStore();
 
 onMounted(() => {
   const storedEmpresa = $q.localStorage.getItem('empresa');
@@ -168,46 +181,67 @@ onMounted(() => {
   }
 });
 
-
 const openEmpresaModal = () => {
   const modalStore = useModalStore();
   modalStore.toggleEmpresa();
 };
 
-
 const mostrarEmpresa = (empresaData) => {
   empresa.value = empresaData;
   $q.localStorage.set('empresa', empresaData);
 };
+
+// Función para ver el PDF de un documento según el tipo y los datos proporcionados
+const verPDF = (tipo, data) => {
+  pdfStore.verPDF(tipo, data);
+};
+
+// Función para preparar la impresión de un documento según el tipo y los datos proporcionados
+const prepImpresion = (tipo, data) => {
+  pdfStore.prepImpresion(tipo, data);
+};
+
+// Función para guardar el PDF de un documento según el tipo y los datos proporcionados
+const guardarPDF = (tipo, data) => {
+  pdfStore.guardarPDF(tipo, data);
+};
+
 </script>
 
-
 <style scoped>
-.pagecontainer {
-  overflow: auto;
-}
-.buttonmodal{
-  width: 100%;
-  align-items: center;
-  background-color: rgba(0, 0, 255, 0);
-}
-.btn-square {
-  margin-inline: auto;
+.info-container {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 16px;
 }
 
-.datos {
-  width: 100%;
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-}
-.datos .row {
-  display: flex;
-  flex-wrap: wrap;
+.info-header {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 8px;
 }
 
-.datos .col {
+.info-box {
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.info-text {
   flex: 1;
-  min-width: 100px; 
+}
+
+.button-container {
+  display: flex;
+  gap: 8px;
 }
 </style>
