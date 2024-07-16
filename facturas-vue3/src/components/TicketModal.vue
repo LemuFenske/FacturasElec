@@ -129,6 +129,7 @@ const modalStore = useModalStore();
 const isOpen = computed(() => modalStore.ticketIsOpen);
 
 const ticket = ref({
+  confirmed: false,
   numero: '',
   fecha: '',
   cuit: '',

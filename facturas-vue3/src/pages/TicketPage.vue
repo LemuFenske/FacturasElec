@@ -22,7 +22,7 @@
                 <div><strong>IVA:</strong> {{ ticket.condIva }}</div>
               </div>
               <div class="factura-actions">
-                <q-btn icon="save" @click="guardarTicketPDF(ticket)" flat></q-btn>
+                <q-btn icon="save" @click="showConfirmationModal(ticket)" flat></q-btn>
                 <q-btn icon="visibility" @click="verTicketPDF(ticket)" flat></q-btn>
                 <q-btn icon="print" @click="imprimirTicketPDF(ticket)" flat></q-btn>
               </div>
@@ -35,6 +35,21 @@
         ref="ticketModal"
         @ticket-guardado="actualizarTicket"
       />
+
+      <div v-if="confirmationModal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirmación</h5>
+              <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+            </div>
+            <div class="modal-footer">
+              <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModal = false" flat></q-btn>
+              <q-btn class="buton-confirm" label="Confirmar" @click="guardarTicketPDF" flat></q-btn>
+            </div>
+          </div>
+        </div>
+      </div>
     </q-page>
   </q-page-container>
 </template>
@@ -47,9 +62,10 @@ import { usePdfStore } from '../stores/pdf';
 import TicketModal from '../components/TicketModal.vue';
 
 const tickets = ref([]);
+const confirmationModal = ref(false);
+const ticketActual = ref(null);
 
 const $q = useQuasar();
-
 const pdfStore = usePdfStore();
 
 onMounted(() => {
@@ -70,8 +86,22 @@ const actualizarTicket = (nuevoTicket) => {
   $q.localStorage.set('tickets', tickets.value);
 };
 
-const guardarTicketPDF = (ticket) => {
-  pdfStore.guardarPDF('ticket', ticket);
+const showConfirmationModal = (ticket) => {
+  ticketActual.value = ticket;
+  confirmationModal.value = true;
+};
+
+const guardarTicketPDF = () => {
+  if (ticketActual.value) {
+    ticketActual.value.confirmed = true;
+    const ticketIndex = tickets.value.findIndex(t => t.numero === ticketActual.value.numero);
+    if (ticketIndex !== -1) {
+      tickets.value[ticketIndex] = { ...ticketActual.value };
+      $q.localStorage.set('tickets', tickets.value);
+    }
+    pdfStore.guardarPDF('ticket', ticketActual.value);
+    confirmationModal.value = false;
+  }
 };
 
 const verTicketPDF = (ticket) => {
@@ -147,5 +177,60 @@ const imprimirTicketPDF = (ticket) => {
 .factura-actions {
   display: flex;
   gap: 8px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.2em;
+  color: #00613c;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.buton-confirm {
+  background-color: #00613c;
+  color: #ffffff;
+}
+
+.buton-cancel {
+  background-color: red;
+  color: #ffffff;
 }
 </style>

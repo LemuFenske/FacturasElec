@@ -23,7 +23,7 @@
             <div class="factura-actions">
               <q-btn icon="visibility" @click="verPDF(debito)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion(debito)" flat></q-btn>
-              <q-btn icon="save" @click="guardarPDF(debito)" flat></q-btn>
+              <q-btn icon="save" @click="showConfirmationModal(debito)" flat></q-btn>
             </div>
           </div>
         </div>
@@ -33,6 +33,21 @@
         ref="debitoModal"
         @debito-guardado="actualizarDebito"
       />
+
+      <div v-if="confirmationModal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirmación</h5>
+              <p class="modal-subtitle">¿Estás seguro de guardar la nota de débito?</p>
+            </div>
+            <div class="modal-footer">
+              <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModal = false" flat></q-btn>
+              <q-btn class="buton-confirm" label="Confirmar" @click="guardarDebitoPDF" flat></q-btn>
+            </div>
+          </div>
+        </div>
+      </div>
     </q-page>
   </q-page-container>
 </template>
@@ -44,14 +59,13 @@ import { useQuasar } from 'quasar';
 import DebitoModal from '../components/DebitoModal.vue';
 import { usePdfStore } from '../stores/pdf.js';
 
-// Crear referencia reactiva para debitos
 const debitos = ref([]);
+const confirmationModal = ref(false);
+const debitoActual = ref(null);
 
-// Obtener instancia de Quasar
 const $q = useQuasar();
 const pdfStore = usePdfStore();
 
-// Ejecutar al montar el componente
 onMounted(() => {
   const storedDebitos = $q.localStorage.getItem('notasDebito');
   if (storedDebitos) {
@@ -59,31 +73,40 @@ onMounted(() => {
   }
 });
 
-// Método para abrir el modal de debito
 const openDebitoModal = () => {
   const modalStore = useModalStore();
   modalStore.toggleDebito();
 };
 
-// Método para actualizar el debito
 const actualizarDebito = (nuevaNotaDebito) => {
   debitos.value.push(nuevaNotaDebito);
   $q.localStorage.set('notasDebito', debitos.value);
 };
 
-// Método para ver el PDF de la nota de débito
+const showConfirmationModal = (debito) => {
+  debitoActual.value = debito;
+  confirmationModal.value = true;
+};
+
+const guardarDebitoPDF = () => {
+  if (debitoActual.value) {
+    debitoActual.value.confirmed = true;
+    const debitoIndex = debitos.value.findIndex(d => d.numero === debitoActual.value.numero);
+    if (debitoIndex !== -1) {
+      debitos.value[debitoIndex] = { ...debitoActual.value };
+      $q.localStorage.set('notasDebito', debitos.value);
+    }
+    pdfStore.guardarPDF('debito', debitoActual.value);
+    confirmationModal.value = false;
+  }
+};
+
 const verPDF = (debito) => {
   pdfStore.verPDF('debito', debito);
 };
 
-// Método para preparar la impresión de la nota de débito
 const prepImpresion = (debito) => {
   pdfStore.prepImpresion('debito', debito);
-};
-
-// Método para guardar el PDF de la nota de débito
-const guardarPDF = (debito) => {
-  pdfStore.guardarPDF('debito', debito);
 };
 </script>
 
@@ -152,6 +175,62 @@ const guardarPDF = (debito) => {
   display: flex;
   gap: 8px;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.2em;
+  color: #00613c;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.buton-confirm {
+  background-color: #00613c;
+  color: #ffffff;
+}
+
+.buton-cancel {
+  background-color: red;
+  color: #ffffff;
+}
 </style>
+
 
   

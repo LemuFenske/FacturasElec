@@ -244,7 +244,7 @@ const guardarPDF = (tipo, data) => {
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-top: 0px;
+  margin-top: 900px;
 }
 .max-container {
   display: flex;

@@ -21,9 +21,9 @@
               <div><strong>Total:</strong> {{ factura.total }}</div>
             </div>
             <div class="factura-actions">
-              <q-btn icon="save" @click="guardarPDF(factura)" flat></q-btn>
-              <q-btn icon="print" @click="prepImpresion(factura)" flat></q-btn>
-              <q-btn icon="visibility" @click="verPDF(factura)" flat></q-btn>
+              <q-btn icon="save" @click="showConfirmationModal(factura)" flat></q-btn>
+              <q-btn icon="print" @click="imprimirFacturaPDF(factura)" flat></q-btn>
+              <q-btn icon="visibility" @click="verFacturaPDF(factura)" flat></q-btn>
             </div>
           </div>
         </div>
@@ -33,6 +33,21 @@
         ref="facturaModal"
         @factura-guardada="actualizarFacturas"
       />
+
+      <div v-if="confirmationModal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirmación</h5>
+              <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+            </div>
+            <div class="modal-footer">
+              <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModal = false" flat></q-btn>
+              <q-btn class="buton-confirm" label="Confirmar" @click="guardarFacturaPDF" flat></q-btn>
+            </div>
+          </div>
+        </div>
+      </div>
     </q-page>
   </q-page-container>
 </template>
@@ -45,9 +60,10 @@ import { usePdfStore } from 'src/stores/pdf.js';
 import NuevaFacturaModal from 'src/components/NuevaFacturaModal.vue';
 
 const facturas = ref([]);
+const confirmationModal = ref(false);
+const facturaActual = ref(null);
 
 const $q = useQuasar();
-
 const pdfStore = usePdfStore();
 
 onMounted(() => {
@@ -68,16 +84,30 @@ const actualizarFacturas = (nuevaFactura) => {
   $q.localStorage.set('facturas', facturas.value);
 };
 
-const verPDF = (factura) => {
+const showConfirmationModal = (factura) => {
+  facturaActual.value = factura;
+  confirmationModal.value = true;
+};
+
+const guardarFacturaPDF = () => {
+  if (facturaActual.value) {
+    facturaActual.value.confirmed = true;
+    const facturaIndex = facturas.value.findIndex(f => f.numero === facturaActual.value.numero);
+    if (facturaIndex !== -1) {
+      facturas.value[facturaIndex] = { ...facturaActual.value };
+      $q.localStorage.set('facturas', facturas.value);
+    }
+    pdfStore.guardarPDF('factura', facturaActual.value);
+    confirmationModal.value = false;
+  }
+};
+
+const verFacturaPDF = (factura) => {
   pdfStore.verPDF('factura', factura);
 };
 
-const prepImpresion = (factura) => {
+const imprimirFacturaPDF = (factura) => {
   pdfStore.prepImpresion('factura', factura);
-};
-
-const guardarPDF = (factura) => {
-  pdfStore.guardarPDF('factura', factura);
 };
 </script>
 
@@ -147,6 +177,60 @@ const guardarPDF = (factura) => {
   gap: 8px;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.modal-container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  margin-top: 0;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.2em;
+  color: #00613c;
+  font-weight: 700;
+}
+
+.modal-subtitle {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.buton-confirm {
+  background-color: #00613c;
+  color: #ffffff;
+}
+
+.buton-cancel {
+  background-color: red;
+  color: #ffffff;
+}
 </style>
+
 

@@ -21,9 +21,10 @@
               <div><strong>Receptor:</strong> {{ cheque.receptor }}</div>
             </div>
             <div class="factura-actions">
-              <q-btn icon="save" @click="guardarChequePDF(cheque)" flat></q-btn>
+              <q-btn icon="save" @click="showConfirmationModal(cheque)" flat></q-btn>
               <q-btn icon="visibility" @click="verChequePDF(cheque)" flat></q-btn>
               <q-btn icon="print" @click="imprimirChequePDF(cheque)" flat></q-btn>
+              <q-btn v-if="!cheque.confirmed" icon="edit" @click="editCheque(cheque)" flat></q-btn>
             </div>
           </div>
         </div>
@@ -31,8 +32,24 @@
 
       <ChequeModal
         ref="chequeModal"
-        @cheque-guardado="actualizarCheque"
+        @cheque-guardado="guardarCambiosCheque"
+        v-model:cheque="chequeActual"
       />
+
+      <div v-if="confirmationModal" class="modal-overlay">
+        <div class="modal-container">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Confirmación</h5>
+              <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+            </div>
+            <div class="modal-footer">
+              <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModal = false" flat></q-btn>
+              <q-btn class="buton-confirm" label="Confirmar" @click="guardarChequePDF" flat></q-btn>
+            </div>
+          </div>
+        </div>
+      </div>
     </q-page>
   </q-page-container>
 </template>
@@ -45,6 +62,8 @@ import { usePdfStore } from '../stores/pdf';
 import ChequeModal from '../components/ChequeModal.vue';
 
 const cheques = ref([]);
+const confirmationModal = ref(false);
+const chequeActual = ref(null);
 
 const $q = useQuasar();
 
@@ -68,8 +87,22 @@ const actualizarCheque = (nuevoCheque) => {
   $q.localStorage.set('cheques', cheques.value);
 };
 
-const guardarChequePDF = (cheque) => {
-  pdfStore.guardarPDF('cheque', cheque);
+const showConfirmationModal = (cheque) => {
+  chequeActual.value = cheque;
+  confirmationModal.value = true;
+}
+
+const guardarChequePDF = () => {
+  if (chequeActual.value) {
+    chequeActual.value.confirmed = true;
+    const chequeIndex = cheques.value.findIndex(cheque => cheque.numero === chequeActual.value.numero);
+    if (chequeIndex !== -1) {
+      cheques.value[chequeIndex] = { ...chequeActual.value };
+      $q.localStorage.set('cheques', cheques.value);
+    }
+    pdfStore.guardarPDF('cheque', chequeActual.value);
+    confirmationModal.value = false;
+  }
 };
 
 const verChequePDF = (cheque) => {
@@ -78,6 +111,25 @@ const verChequePDF = (cheque) => {
 
 const imprimirChequePDF = (cheque) => {
   pdfStore.prepImpresion('cheque', cheque);
+};
+
+const editCheque = (cheque) => {
+  chequeActual.value = { ...cheque }; // Clonar el cheque para no modificar el original directamente
+  const modalStore = useModalStore();
+  modalStore.toggleCheque();
+};
+
+const guardarCambiosCheque = () => {
+  // Implementar lógica para guardar cambios en chequeActual
+  if (chequeActual.value) {
+    const chequeIndex = cheques.value.findIndex(cheque => cheque.numero === chequeActual.value.numero);
+    if (chequeIndex !== -1) {
+      cheques.value[chequeIndex] = { ...chequeActual.value };
+      $q.localStorage.set('cheques', cheques.value);
+    }
+    // Otra lógica necesaria para guardar cambios
+    // Por ejemplo, actualizar en la base de datos o realizar otras operaciones necesarias
+  }
 };
 </script>
 
@@ -146,4 +198,54 @@ const imprimirChequePDF = (cheque) => {
   display: flex;
   gap: 8px;
 }
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-container {
+  background: white;
+  padding: 0px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  margin-top: auto;
+  margin-bottom: 00px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 1.2em;
+  color: #00613c;
+  font-weight: 700;
+  
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+.buton-confirm {
+  background-color: #00613c;
+  color: #ffffff;
+}
+.buton-cancel {
+  background-color:red;
+  color: #ffffff;
+}
 </style>
+
