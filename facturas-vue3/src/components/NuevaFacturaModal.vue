@@ -158,6 +158,7 @@ const isOpen = computed(() => modalStore.facturaIsOpen);
 
 // Datos de la factura
 const factura = ref({
+  confirmed: false,
   condTipo: '',
   ptoVenta: '',
   numero: '',

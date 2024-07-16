@@ -70,7 +70,11 @@
               ></q-input>
             </div>
             <div class="column">
-              <div class="full-width"></div>
+              <q-input
+                v-model="empresaLocal.nombreTitular"
+                label="Nombre del Titular"
+                class="full-width"
+              ></q-input>
             </div>
           </div>
         </div>
@@ -79,7 +83,6 @@
     </q-card>
   </q-dialog>
 </template>
-
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
@@ -94,7 +97,6 @@ const props = defineProps({
   }
 });
 
-
 const empresaLocal = ref({
   razonSocial: '',
   nombre: '',
@@ -102,7 +104,8 @@ const empresaLocal = ref({
   direccion: '',
   condIva: '',
   ingBrutos: '',
-  fechaInicio: new Date().toISOString().split('T')[0]
+  fechaInicio: new Date().toISOString().split('T')[0],
+  nombreTitular: ''  
 });
 
 const opcionesIva = ref([
@@ -113,30 +116,24 @@ const opcionesIva = ref([
   'Consumidor Final'
 ]);
 
-
 const $q = useQuasar();
-
 const emit = defineEmits(['empresa-guardada']);
-
 
 const isOpen = computed(() => {
   const modalStore = useModalStore();
   return modalStore.empresaIsOpen;
 });
 
-// Watcher para cargar los datos de la empresa cuando el modal se abre
 watch(isOpen, (newValue) => {
   if (newValue) {
     loadEmpresaData();
   }
 });
 
-
 const closeModal = () => {
   const modalStore = useModalStore();
   modalStore.toggleEmpresa();
 };
-
 
 const guardarEmpresa = () => {
   const empresaData = { ...empresaLocal.value };
@@ -144,7 +141,6 @@ const guardarEmpresa = () => {
   emit('empresa-guardada', empresaData);
   closeModal();
 };
-
 
 const loadEmpresaData = () => {
   const storedEmpresa = $q.localStorage.getItem('empresa');
@@ -154,7 +150,6 @@ const loadEmpresaData = () => {
     empresaLocal.value = { ...props.empresa };
   }
 };
-
 
 onMounted(() => {
   loadEmpresaData();

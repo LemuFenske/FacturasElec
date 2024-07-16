@@ -1,11 +1,12 @@
 <template>
   <q-page-container>
-    <q-page class="page-container">
-      <div class="button-modal">
+    <q-page class="page-content">
+      <div class="all-container">
+      <div class="button-container">
         <q-btn
           label="Crear/Editar Empresa"
           icon="apartment"
-          class="btn-square no-print"
+          class="btn-create no-print"
           @click="openEmpresaModal"
           flat
           style="width: 100%;"
@@ -13,6 +14,7 @@
       </div>
 
       <!-- Sección de datos de la empresa -->
+       <div class='max-container'>
       <div v-if="empresa && Object.keys(empresa).length" class="info-container q-pa-md mb-6">
         <q-item-label header class="info-header">Datos de la Empresa</q-item-label>
         <div class="info-box">
@@ -36,7 +38,7 @@
               <div><strong>Fecha:</strong> {{ factura.fecha }}</div>
               <div><strong>Total:</strong> {{ factura.total }}</div>
             </div>
-            <div class="button-container">
+            <div class="factura-actions">
               <q-btn icon="save" @click="guardarPDF('factura', factura)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion('factura', factura)" flat></q-btn>
               <q-btn icon="visibility" @click="verPDF('factura', factura)" flat></q-btn>
@@ -51,12 +53,11 @@
         <div class="info-box">
           <div v-for="nota in notasCredito" :key="nota.numero" class="info-item">
             <div class="info-text">
-              <div><strong>Nota N°:</strong> {{ nota.numero }}</div>
-              <div><strong>Fecha:</strong> {{ nota.fecha }}</div>
-              <div><strong>Monto:</strong> {{ nota.monto }}</div>
-              <div><strong>Concepto:</strong> {{ nota.concepto }}</div>
+              <div><strong>Número:</strong> {{ nota.numero }}</div>
+              <div><strong>Período:</strong> {{ nota.periodo.desde }} - {{ nota.periodo.hasta }}</div>
+              <div><strong>Vencimiento:</strong> {{ nota.vencimientoPago }}</div>
             </div>
-            <div class="button-container">
+            <div class="factura-actions">
               <q-btn icon="save" @click="guardarPDF('credito', nota)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion('credito', nota)" flat></q-btn>
               <q-btn icon="visibility" @click="verPDF('credito', nota)" flat></q-btn>
@@ -71,12 +72,11 @@
         <div class="info-box">
           <div v-for="nota in notasDebito" :key="nota.numero" class="info-item">
             <div class="info-text">
-              <div><strong>Nota N°:</strong> {{ nota.numero }}</div>
-              <div><strong>Fecha:</strong> {{ nota.fecha }}</div>
-              <div><strong>Monto:</strong> {{ nota.monto }}</div>
-              <div><strong>Concepto:</strong> {{ nota.concepto }}</div>
+              <div><strong>Número:</strong> {{ nota.numero }}</div>
+              <div><strong>Período:</strong> {{ nota.periodo.desde }} - {{ nota.periodo.hasta }}</div>
+              <div><strong>Vencimiento:</strong> {{ nota.vencimientoPago }}</div>
             </div>
-            <div class="button-container">
+            <div class="factura-actions">
               <q-btn icon="save" @click="guardarPDF('debito', nota)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion('debito', nota)" flat></q-btn>
               <q-btn icon="visibility" @click="verPDF('debito', nota)" flat></q-btn>
@@ -91,11 +91,11 @@
         <div class="info-box">
           <div v-for="ticket in tickets" :key="ticket.numero" class="info-item">
             <div class="info-text">
-              <div><strong>Ticket N°:</strong> {{ ticket.numero }}</div>
-              <div><strong>Fecha:</strong> {{ ticket.fecha }}</div>
-              <div><strong>Monto:</strong> {{ ticket.monto }}</div>
+              <div><strong>Número:</strong> {{ ticket.numero }}</div>
+                <div><strong>Fecha:</strong> {{ ticket.fecha }}</div>
+                <div><strong>IVA:</strong> {{ ticket.condIva }}</div>
             </div>
-            <div class="button-container">
+            <div class="factura-actions">
               <q-btn icon="save" @click="guardarPDF('ticket', ticket)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion('ticket', ticket)" flat></q-btn>
               <q-btn icon="visibility" @click="verPDF('ticket', ticket)" flat></q-btn>
@@ -114,7 +114,7 @@
               <div><strong>Monto:</strong> ${{ cheque.montoNumero }}</div>
               <div><strong>Receptor:</strong> {{ cheque.receptor }}</div>
             </div>
-            <div class="button-container">
+            <div class="factura-actions">
               <q-btn icon="save" @click="guardarPDF('cheque', cheque)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion('cheque', cheque)" flat></q-btn>
               <q-btn icon="visibility" @click="verPDF('cheque', cheque)" flat></q-btn>
@@ -122,7 +122,8 @@
           </div>
         </div>
       </div>
-
+    </div>
+  </div>
       <EmpresaModal
         ref="empresaModal"
         :empresa="empresa"
@@ -209,7 +210,50 @@ const guardarPDF = (tipo, data) => {
 </script>
 
 <style scoped>
+.page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  
+}
+
+.button-container {
+  width: 100%;
+  
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.btn-create {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 24px;
+  font-size: 1.1em;
+  font-weight: bold;
+  background-color: #00613c;
+  color: #fff;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-create:hover {
+  background-color: #00472c;
+}
+.all-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 0px;
+}
+.max-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+ 
+}
 .info-container {
+  width: 100%;
   border: 1px solid #ddd;
   border-radius: 5px;
   margin-bottom: 16px;
@@ -240,7 +284,7 @@ const guardarPDF = (tipo, data) => {
   flex: 1;
 }
 
-.button-container {
+.factura-actions {
   display: flex;
   gap: 8px;
 }

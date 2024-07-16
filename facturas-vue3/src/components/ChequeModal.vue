@@ -101,6 +101,7 @@ const modalStore = useModalStore();
 const isOpen = computed(() => modalStore.chequeIsOpen);
 
 const cheque = ref({
+  confirmed: false,
   numero: '',
   banco: '',
   domicilioPago: '',

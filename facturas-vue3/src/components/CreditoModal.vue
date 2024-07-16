@@ -18,20 +18,161 @@
               ></q-input>
             </q-item>
             <q-item>
+              <q-select
+                class="full-width"
+                v-model="notaCredito.condTipo"
+                label="Tipo"
+                :options="opcionesTipo"
+              ></q-select>
+            </q-item>
+            <q-item>
               <q-input
                 class="full-width"
-                v-model="notaCredito.monto"
-                type="number"
-                label="Monto"
+                v-model="notaCredito.fechaEmision"
+                type="date"
+                label="Fecha de Emisión"
               ></q-input>
             </q-item>
             <q-item>
               <q-input
                 class="full-width"
-                v-model="notaCredito.concepto"
-                label="Concepto"
+                v-model="notaCredito.ptoVenta"
+                label="Punto de Venta"
               ></q-input>
             </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.vencimientoPago"
+                type="date"
+                label="Vencimiento del Pago"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.periodo.desde"
+                type="date"
+                label="Periodo Desde"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.periodo.hasta"
+                type="date"
+                label="Periodo Hasta"
+              ></q-input>
+            </q-item>
+            <q-item-label header>Datos del Cliente</q-item-label>
+            <q-item>
+              <q-select
+                class="full-width"
+                v-model="notaCredito.cliente.condIva"
+                label="Condición de IVA"
+                :options="opcionesIva"
+              ></q-select>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.cliente.apellidoNombre"
+                label="Apellido y Nombre"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.cliente.cuit"
+                label="CUIT"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.cliente.domicilio"
+                label="Domicilio"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.cliente.razonSocial"
+                label="Razón Social"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="notaCredito.cliente.condVenta"
+                label="Condición de Venta"
+              ></q-input>
+            </q-item>
+            <q-item-label header>Datos del Producto/Servicio</q-item-label>
+            <div v-for="(producto, index) in notaCredito.productosServicios" :key="index">
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model="producto.nombre"
+                  label="Nombre del Producto/Servicio"
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.cantidad"
+                  type="number"
+                  label="Cantidad"
+                  @input="calcularSubtotal(producto)"
+                ></q-input>
+              </q-item>
+              <q-item>
+              <q-select
+                class="full-width"
+                v-model="producto.unidadMedida"
+                label="Unidad de Medida"
+                :options="opcionesUnidades"
+              ></q-select>
+            </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.precioUnitario"
+                  type="number"
+                  label="Precio Unitario"
+                  @input="calcularSubtotal(producto)"
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.subtotal"
+                  type="number"
+                  label="Subtotal"
+                  readonly
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.iva"
+                  type="number"
+                  label="IVA"
+                  @input="calcularSubtotalConIva(producto)"
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.subtotalConIva"
+                  type="number"
+                  label="Subtotal con IVA"
+                  readonly
+                ></q-input>
+              </q-item>
+              <q-btn flat round dense icon="delete" @click="eliminarProducto(index)" class="q-ml-sm"></q-btn>
+            </div>
+            <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
         <q-btn label="Guardar" @click="guardarNotaCredito" class="buttonsave"></q-btn>
@@ -45,46 +186,99 @@ import { ref, computed } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 
-
 const modalStore = useModalStore();
-
-
 const isOpen = computed(() => modalStore.creditoIsOpen);
-
 
 const notaCredito = ref({
   numero: '',
+  confirmed: false,
   fecha: new Date().toISOString().split('T')[0],
-  monto: '',
-  concepto: '',
+  periodo: {
+    desde: '',
+    hasta: ''
+  },
+  condTipo: '',
+  fechaEmision: '',
+  ptoVenta: '',
+  vencimientoPago: '',
+  cliente: {
+    condIva: '',
+    apellidoNombre: '',
+    cuit: '',
+    domicilio: '',
+    razonSocial: '',
+    condVenta: '',
+  },
+  productosServicios: [
+    {
+      nombre: '',
+      cantidad: 0,
+      unidadMedida: '',
+      precioUnitario: 0,
+      subtotal: 0,
+      iva: 0,
+      subtotalConIva: 0
+    }
+  ]
 });
 
+const opcionesTipo = ref([
+  'A',
+  'B',
+  'C',
+]);
+
+const opcionesIva = ref([
+  'Responsable Inscripto',
+  'Monotributista',
+  'Exento',
+  'No Responsable',
+  'Consumidor Final'
+]);
+
+const opcionesUnidades = ['Unidad', 'Kg', 'Litro', 'Horas'];
 
 const $q = useQuasar();
-
-
 const emit = defineEmits(['credito-guardado']);
 
-
 const closeModal = () => {
-  modalStore.toggleCredito(); 
+  modalStore.toggleCredito();
+};
+
+const agregarProducto = () => {
+  notaCredito.value.productosServicios.push({
+    nombre: '',
+    cantidad: 0,
+    unidadMedida: '',
+    precioUnitario: 0,
+    subtotal: 0,
+    iva: 0,
+    subtotalConIva: 0
+  });
+};
+
+const eliminarProducto = (index) => {
+  notaCredito.value.productosServicios.splice(index, 1);
+};
+
+const calcularSubtotal = (producto) => {
+  producto.subtotal = producto.cantidad * producto.precioUnitario;
+  calcularSubtotalConIva(producto);
+};
+
+const calcularSubtotalConIva = (producto) => {
+  producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
 };
 
 const guardarNotaCredito = () => {
   let notasCredito = $q.localStorage.getItem('notasCredito') || [];
-
   const nuevaNotaCredito = {
     ...notaCredito.value,
     index: notasCredito.length,
   };
-
   notasCredito.push(nuevaNotaCredito);
-
   $q.localStorage.set('notasCredito', notasCredito);
-
-
   emit('credito-guardado', nuevaNotaCredito);
-
   closeModal();
 };
 </script>

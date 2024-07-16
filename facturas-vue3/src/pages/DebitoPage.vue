@@ -1,33 +1,32 @@
 <template>
   <q-page-container>
     <q-page class="page-content">
-      <q-btn
-        label="Nota de Débito"
-        icon="payment"
-        class="btn-square no-print"
-        @click="openDebitoModal"
-        flat
-      ></q-btn>
+      <div class="button-container">
+        <q-btn
+          label="Crear Nota de Débito"
+          icon="payment"
+          class="btn-create no-print"
+          @click="openDebitoModal"
+          flat
+        ></q-btn>
+      </div>
 
-      <div v-if="debitos.length">
-        <q-list bordered class="q-pa-sm">
-          <q-item-label header>Lista de Notas de Débito</q-item-label>
-          <q-item v-for="(debito, index) in debitos" :key="index">
-            <q-item-section>
-              <div>
-                <div><strong>Número:</strong> {{ debito.numero }}</div>
-                <div><strong>Fecha:</strong> {{ debito.fecha }}</div>
-                <div><strong>Monto:</strong> {{ debito.monto }}</div>
-                <div><strong>Concepto:</strong> {{ debito.concepto }}</div>
-              </div>
-            </q-item-section>
-            <q-item-section>
+      <div v-if="debitos.length" class="info-container">
+        <q-item-label header class="info-header">Lista de Notas de Débito</q-item-label>
+        <div class="info-box">
+          <div v-for="(debito, index) in debitos" :key="index" class="info-item">
+            <div class="info-text">
+              <div><strong>Número:</strong> {{ debito.numero }}</div>
+              <div><strong>Período:</strong> {{ debito.periodo.desde }} - {{ debito.periodo.hasta }}</div>
+              <div><strong>Vencimiento:</strong> {{ debito.vencimientoPago }}</div>
+            </div>
+            <div class="factura-actions">
               <q-btn icon="visibility" @click="verPDF(debito)" flat></q-btn>
               <q-btn icon="print" @click="prepImpresion(debito)" flat></q-btn>
               <q-btn icon="save" @click="guardarPDF(debito)" flat></q-btn>
-            </q-item-section>
-          </q-item>
-        </q-list>
+            </div>
+          </div>
+        </div>
       </div>
 
       <DebitoModal
@@ -88,37 +87,71 @@ const guardarPDF = (debito) => {
 };
 </script>
 
+<style scoped>
+.page-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
 
+.button-container {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 16px;
+}
 
-  <!-- <script>
-import { useModalStore } from '../stores/modalVariables.js'; 
-  import DebitoModal from '../components/DebitoModal.vue';
-  
-  export default {
-    components: {
-      DebitoModal
-    },
-    data() {
-      return {
-        debitos: []
-      };
-    },
-    mounted() {
-      const storedDebitos = this.$q.localStorage.getItem('notasDebito');
-      if (storedDebitos) {
-        this.debitos = storedDebitos;
-      }
+.btn-create {
+  width: 100%;
+  padding: 12px 24px;
+  font-size: 1.1em;
+  font-weight: bold;
+  background-color: #00613c;
+  color: #fff;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
 
-    },
-    methods: {
-      openDebitoModal() {
-        const modalStore = useModalStore();
-        modalStore.toggleDebito();
-      },
-      actualizarDebito(nuevaNotaDebito) {
-        this.debitos.push(nuevaNotaDebito);
-      }
-    }
-  };
-  </script> -->
+.btn-create:hover {
+  background-color: #00472c;
+}
+
+.info-container {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+.info-header {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 8px;
+}
+
+.info-box {
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+}
+
+.info-text {
+  flex: 1;
+}
+
+.factura-actions {
+  display: flex;
+  gap: 8px;
+}
+</style>
+
   

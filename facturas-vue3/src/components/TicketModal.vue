@@ -13,18 +13,104 @@
               <q-input
                 class="full-width"
                 v-model="ticket.numero"
-                type="number"
+                type="text"
                 label="Número de Ticket"
               ></q-input>
             </q-item>
             <q-item>
               <q-input
                 class="full-width"
-                v-model="ticket.monto"
-                type="number"
-                label="Monto"
+                v-model="ticket.fecha"
+                type="date"
+                label="Fecha"
               ></q-input>
             </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="ticket.cuit"
+                type="text"
+                label="CUIT"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="ticket.apellidoNombre"
+                type="text"
+                label="Apellido y Nombre"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="ticket.razonSocial"
+                type="text"
+                label="Razón Social"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="ticket.domicilio"
+                type="text"
+                label="Domicilio"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-select
+                class="full-width"
+                v-model="ticket.condIva"
+                label="Condición de IVA"
+                :options="opcionesIva"
+              ></q-select>
+            </q-item>
+            <q-item-label header>Datos del Producto/Servicio</q-item-label>
+            <div v-for="(producto, index) in ticket.productosFactura" :key="index">
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model="producto.nombre"
+                  label="Nombre del Producto/Servicio"
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.cantidad"
+                  type="number"
+                  label="Cantidad"
+                  @input="calcularSubtotal(producto)"
+                ></q-input>
+              </q-item>
+              <div class="col-sm-3 q-pa-xs">
+                  <q-select
+                    v-model="producto.unidad"
+                    label="Unidad"
+                    :options="opcionesUnidades"
+                  ></q-select>
+                </div>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.precio"
+                  type="number"
+                  label="Precio Unitario"
+                  @input="calcularSubtotal(producto)"
+                ></q-input>
+              </q-item>
+              <q-item>
+                <q-input
+                  class="full-width"
+                  v-model.number="producto.subtotal"
+                  type="number"
+                  label="Subtotal"
+                  readonly
+                ></q-input>
+              </q-item>
+              <q-btn flat round dense icon="delete" @click="eliminarProducto(index)" class="q-ml-sm"></q-btn>
+            </div>
+            <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
         <q-btn label="Guardar" @click="guardarTicket" class="buttonsave"></q-btn>
@@ -34,27 +120,73 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
-
 
 const modalStore = useModalStore();
 
 const isOpen = computed(() => modalStore.ticketIsOpen);
 
 const ticket = ref({
-        numero: '',
-        fecha: new Date().toISOString().split('T')[0], 
-        monto: '',
+  numero: '',
+  fecha: '',
+  cuit: '',
+  apellidoNombre: '',
+  razonSocial: '',
+  domicilio: '',
+  condIva: '',
+  productosFactura: [
+    {
+      nombre: '',
+      cantidad: 0,
+      precio: 0,
+      unidad: '',
+      subtotal: 0
+    }
+  ]
 });
+
+// Watcher to calculate subtotal whenever cantidad or precio changes
+watch(ticket.value.productosFactura, (newVal) => {
+  newVal.forEach(producto => {
+    producto.subtotal = producto.cantidad * producto.precio;
+  });
+}, { deep: true });
+
+const opcionesIva = ref([
+  'Responsable Inscripto',
+  'Monotributista',
+  'Exento',
+  'No Responsable',
+  'Consumidor Final'
+]);
+const opcionesUnidades = ['Unidad', 'Kg', 'Litro'];
 
 const $q = useQuasar();
 
 const emit = defineEmits(['ticket-guardado']);
 
 const closeModal = () => {
-  modalStore.toggleTicket(); 
+  modalStore.toggleTicket();
+};
+
+const agregarProducto = () => {
+  ticket.value.productosFactura.push({
+    nombre: '',
+    cantidad: 0,
+    precio: 0,
+    unidad: '',
+    subtotal: 0
+  });
+};
+
+const eliminarProducto = (index) => {
+  ticket.value.productosFactura.splice(index, 1);
+};
+
+const calcularSubtotal = (producto) => {
+  producto.subtotal = producto.cantidad * producto.precio;
 };
 
 const guardarTicket = () => {

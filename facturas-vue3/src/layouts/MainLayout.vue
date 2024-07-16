@@ -84,7 +84,7 @@
             <q-btn @click="clearCacheAndStorage">Actualizar</q-btn>
           </q-item-section>
         </q-item>
-          <q-item v-if="swVersion">
+        <q-item v-if="swVersion">
           <q-item-section>
             <div>Versión (con mensaje): {{ swVersion }}</div>
           </q-item-section>
@@ -155,18 +155,23 @@ function installPWA() {
   }
 }
 
-function fetchVersionFromSW() {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.controller.postMessage({ type: 'GET_VERSION' })
+function postMsg(sw, sAction, pResp) {
+  try {
+    var msgCh = new MessageChannel();
+    msgCh.port1.onmessage = pResp;
+    sw.postMessage({ action: sAction }, [msgCh.port2]);
+  } catch (err) {
+    console.error(sAction + ' error: ' + err);
   }
 }
 
-// Escuchar los mensajes del service worker
-window.addEventListener('message', (event) => {
-  if (event.data && event.data.version) {
-    swVersion.value = event.data.version
+function fetchVersionFromSW() {
+  if (navigator.serviceWorker.controller) {
+    postMsg(navigator.serviceWorker.controller, 'getSWVer', (event) => {
+      swVersion.value = event.data.version;
+    });
   }
-})
+}
 
 // Obtener la versión desde version.json
 function fetchVersionFromJSON() {
@@ -178,7 +183,6 @@ function fetchVersionFromJSON() {
     .catch(error => console.error('Error fetching version:', error))
 }
 
-// Función para limpiar caché y almacenamiento local
 async function clearCacheAndStorage() {
   try {
     // Clear local storage
@@ -190,19 +194,19 @@ async function clearCacheAndStorage() {
       await Promise.all(cacheNames.map(name => caches.delete(name)))
     }
     
-    // Optionally, reload the page
+    // Reload the page
     window.location.reload(true)
   } catch (error) {
     console.error("Error clearing cache and storage:", error)
   }
 }
 
-// Obtener ambas versiones al montar el componente
 onMounted(() => {
   fetchVersionFromSW()
   fetchVersionFromJSON()
 })
 </script>
+
 
 
 

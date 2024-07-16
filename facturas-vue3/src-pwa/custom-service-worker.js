@@ -10,11 +10,12 @@ import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 
+const PWA=location.pathname.split('/')[1], ver='0.0.1';//ver debe cambiar para actualizar el cache
+
 self.skipWaiting();
 clientsClaim();
 
 // Define version
-const VERSION = '0.0.1';
 
 // Use with precache injection
 precacheAndRoute([
@@ -36,11 +37,23 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
 }
 
 // Listen for messages from the client
-self.addEventListener('message', (event) => {
-  console.log('Message received in service worker:', event.data);
-  if (event.data && event.data.type === 'GET_VERSION') {
-    event.ports[0].postMessage({ version: VERSION });
-    console.log('Version sent:', VERSION); 
+self.addEventListener('message', function(event) {
+  if (event.data.action === 'skipWaiting') {
+    self.skipWaiting();//actualiza sw
+    event.ports[0].postMessage({
+      "version": PWA+ver
+    });
+  }else if (event.data.action === 'getSWVer') {
+    event.ports[0].postMessage({
+      "version": PWA+ver
+    });
+  }else if (event.data.action === 'getCliCnt') {
+    self.clients.matchAll()
+    .then(wins =>{ 
+      event.ports[0].postMessage({
+        "cliCnt": wins.length
+      });
+    });
   }
 });
 
