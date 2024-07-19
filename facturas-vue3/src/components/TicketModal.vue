@@ -83,13 +83,14 @@
                   @input="calcularSubtotal(producto)"
                 ></q-input>
               </q-item>
-              <div class="col-sm-3 q-pa-xs">
-                  <q-select
-                    v-model="producto.unidad"
-                    label="Unidad"
-                    :options="opcionesUnidades"
-                  ></q-select>
-                </div>
+              <q-item>
+              <q-select
+                  class="full-width"
+                  v-model="producto.unidad"
+                  label="Unidad de medida"
+                  :options="opcionesUnidades"
+                ></q-select>
+              </q-item>
               <q-item>
                 <q-input
                   class="full-width"

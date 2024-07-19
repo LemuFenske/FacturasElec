@@ -22,8 +22,9 @@
             </div>
             <div class="factura-actions">
               <q-btn icon="save" @click="showConfirmationModal(factura)" flat></q-btn>
-              <q-btn icon="print" @click="imprimirFacturaPDF(factura)" flat></q-btn>
               <q-btn icon="visibility" @click="verFacturaPDF(factura)" flat></q-btn>
+              <q-btn v-if="!factura.confirmed" icon="edit" @click="openFacturaEditModal(factura)" flat></q-btn>
+              <!-- <q-btn icon="print" @click="imprimirFacturaPDF(factura)" flat></q-btn> -->
             </div>
           </div>
         </div>
@@ -33,6 +34,12 @@
         ref="facturaModal"
         @factura-guardada="actualizarFacturas"
       />
+
+      <NuevaFacturaModalEdit
+        ref="facturaEditModal"
+        @factura-editada="actualizarFacturaEditado"
+      />
+
 
       <div v-if="confirmationModal" class="modal-overlay">
         <div class="modal-container">
@@ -58,6 +65,7 @@ import { useQuasar } from 'quasar';
 import { useModalStore } from '../stores/modalVariables.js';
 import { usePdfStore } from 'src/stores/pdf.js';
 import NuevaFacturaModal from 'src/components/NuevaFacturaModal.vue';
+import NuevaFacturaModalEdit from 'src/components/NuevaFacturaModalEdit.vue';
 
 const facturas = ref([]);
 const confirmationModal = ref(false);
@@ -79,9 +87,23 @@ const openFacturaModal = () => {
   modalStore.toggleFactura();
 };
 
+const openFacturaEditModal = (factura) => {
+  const modalStore = useModalStore();
+  modalStore.setFacturaToEdit(factura);
+  modalStore.toggleFacturaEdit();
+};
+
 const actualizarFacturas = (nuevaFactura) => {
   facturas.value.push(nuevaFactura);
   $q.localStorage.set('facturas', facturas.value);
+};
+
+const actualizarFacturaEditado = (facturaEditado) => {
+  const index = facturas.value.findIndex(c => c.numero === facturaEditado.numero);
+  if (index !== -1) {
+    facturas.value[index] = facturaEditado;
+    $q.localStorage.set('facturas', facturas.value);
+  }
 };
 
 const showConfirmationModal = (factura) => {

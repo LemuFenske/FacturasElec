@@ -157,7 +157,7 @@
                   class="full-width"
                   v-model.number="producto.iva"
                   type="number"
-                  label="IVA"
+                  label="IVA (%)"
                   @input="calcularSubtotalConIva(producto)"
                 ></q-input>
               </q-item>
@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 
@@ -269,6 +269,12 @@ const calcularSubtotal = (producto) => {
 const calcularSubtotalConIva = (producto) => {
   producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
 };
+
+watch(notaCredito.value.productosServicios, (newVal) => {
+  newVal.forEach(producto => {
+    calcularSubtotal(producto);
+  });
+}, { deep: true });
 
 const guardarNotaCredito = () => {
   let notasCredito = $q.localStorage.getItem('notasCredito') || [];

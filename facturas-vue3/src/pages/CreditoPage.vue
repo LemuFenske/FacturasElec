@@ -21,9 +21,10 @@
               <div><strong>Vencimiento:</strong> {{ nota.vencimientoPago }}</div>
             </div>
             <div class="factura-actions">
-              <q-btn icon="visibility" @click="verPDF(nota)" flat></q-btn>
-              <q-btn icon="print" @click="prepImpresion(nota)" flat></q-btn>
               <q-btn icon="save" @click="showConfirmationModal(nota)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF(nota)" flat></q-btn>
+              <q-btn v-if="!nota.confirmed" icon="edit" @click="openCreditoEditModal(nota)" flat></q-btn>
+              <!-- <q-btn icon="print" @click="prepImpresion(nota)" flat></q-btn> -->
             </div>
           </div>
         </div>
@@ -32,6 +33,11 @@
       <CreditoModal
         ref="creditoModal"
         @credito-guardado="actualizarCredito"
+      />
+
+      <CreditoModalEdit
+        ref="creditoEditModal"
+        @credito-editado="actualizarCreditoEditado"
       />
 
       <div v-if="confirmationModal" class="modal-overlay">
@@ -57,6 +63,7 @@ import { useQuasar } from 'quasar';
 import { ref, onMounted } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import CreditoModal from '../components/CreditoModal.vue';
+import CreditoModalEdit from '../components/CreditoModalEdit.vue';
 import { usePdfStore } from '../stores/pdf.js';
 
 const creditos = ref([]);
@@ -79,9 +86,23 @@ const openCreditoModal = () => {
   modalStore.toggleCredito();
 };
 
+const openCreditoEditModal = (credito) => {
+  const modalStore = useModalStore();
+  modalStore.setCreditoToEdit(credito);
+  modalStore.toggleCreditoEdit();
+};
+
 const actualizarCredito = (nuevaNotaCredito) => {
   creditos.value.push(nuevaNotaCredito);
   $q.localStorage.set('notasCredito', creditos.value);
+};
+
+const actualizarCreditoEditado = (creditoEditado) => {
+  const index = creditos.value.findIndex(c => c.numero === creditoEditado.numero);
+  if (index !== -1) {
+    creditos.value[index] = creditoEditado;
+    $q.localStorage.set('notasCredito', creditos.value);
+  }
 };
 
 const showConfirmationModal = (credito) => {
@@ -110,6 +131,7 @@ const prepImpresion = (credito) => {
   pdfStore.prepImpresion('credito', credito);
 };
 </script>
+
 
 <style scoped>
 .page-content {

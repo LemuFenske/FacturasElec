@@ -182,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 
@@ -270,6 +270,12 @@ const calcularSubtotalConIva = (producto) => {
   producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
 };
 
+watch(notaDebito.value.productosServicios, (newVal) => {
+  newVal.forEach(producto => {
+    calcularSubtotal(producto);
+  });
+}, { deep: true });
+
 const guardarNotaDebito = () => {
   let notasDebito = $q.localStorage.getItem('notasDebito') || [];
   const nuevaNotaDebito = {
@@ -282,6 +288,7 @@ const guardarNotaDebito = () => {
   closeModal();
 };
 </script>
+
 
   
   <style scoped>

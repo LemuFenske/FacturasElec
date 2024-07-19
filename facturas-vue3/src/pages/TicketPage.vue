@@ -24,7 +24,8 @@
               <div class="factura-actions">
                 <q-btn icon="save" @click="showConfirmationModal(ticket)" flat></q-btn>
                 <q-btn icon="visibility" @click="verTicketPDF(ticket)" flat></q-btn>
-                <q-btn icon="print" @click="imprimirTicketPDF(ticket)" flat></q-btn>
+                <q-btn v-if="!ticket.confirmed" icon="edit" @click="openTicketEditModal(ticket)" flat></q-btn>
+                <!-- <q-btn icon="print" @click="imprimirTicketPDF(ticket)" flat></q-btn> -->
               </div>
             </div>
           </div>
@@ -35,6 +36,12 @@
         ref="ticketModal"
         @ticket-guardado="actualizarTicket"
       />
+
+      <TicketModalEdit
+        ref="ticketEditModal"
+        @ticket-editado="actualizarTicketEditado"
+      />
+
 
       <div v-if="confirmationModal" class="modal-overlay">
         <div class="modal-container">
@@ -58,8 +65,9 @@
 import { ref, onMounted } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
-import { usePdfStore } from '../stores/pdf';
 import TicketModal from '../components/TicketModal.vue';
+import TicketModalEdit from '../components/TicketModalEdit.vue';
+import { usePdfStore } from '../stores/pdf';
 
 const tickets = ref([]);
 const confirmationModal = ref(false);
@@ -81,9 +89,23 @@ const openTicketModal = () => {
   modalStore.toggleTicket();
 };
 
+const openTicketEditModal = (ticket) => {
+  const modalStore = useModalStore();
+  modalStore.setTicketToEdit(ticket);
+  modalStore.toggleTicketEdit();
+};
+
 const actualizarTicket = (nuevoTicket) => {
   tickets.value.push(nuevoTicket);
   $q.localStorage.set('tickets', tickets.value);
+};
+
+const actualizarTicketEditado = (ticketEditado) => {
+  const index = tickets.value.findIndex(c => c.numero === ticketEditado.numero);
+  if (index !== -1) {
+    tickets.value[index] = ticketEditado;
+    $q.localStorage.set('tickets', tickets.value);
+  }
 };
 
 const showConfirmationModal = (ticket) => {

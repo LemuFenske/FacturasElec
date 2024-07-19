@@ -1,0 +1,178 @@
+<!-- Sección de facturas -->
+<div v-if="facturas.length" class="info-container q-pa-md mb-6">
+  <q-item-label header class="info-header">Facturas de la Empresa {{ empresa.nombre }}</q-item-label>
+  <div class="info-box">
+    <div v-for="factura in facturas" :key="factura.numero" class="info-item">
+      <div class="info-text">
+        <div><strong>Factura N°:</strong> {{ factura.numero }}</div>
+        <div><strong>Fecha:</strong> {{ factura.fecha }}</div>
+        <div><strong>Total:</strong> {{ factura.total }}</div>
+      </div>
+      <div class="factura-actions">
+        <q-btn icon="save" @click="showConfirmationModalFactura(factura)" flat></q-btn>
+        <!-- <q-btn icon="save" @click="guardarPDF('factura', factura)" flat></q-btn> -->
+        <q-btn icon="visibility" @click="verPDF('factura', factura)" flat></q-btn>
+        <q-btn v-if="!factura.confirmed" icon="edit" @click="openFacturaEditModal(factura)" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Sección de notas de crédito -->
+<div v-if="notasCredito.length" class="info-container q-pa-md mb-6">
+  <q-item-label header class="info-header">Notas de Crédito de la Empresa {{ empresa.nombre }}</q-item-label>
+  <div class="info-box">
+    <div v-for="nota in notasCredito" :key="nota.numero" class="info-item">
+      <div class="info-text">
+        <div><strong>Número:</strong> {{ nota.numero }}</div>
+        <div><strong>Período:</strong> {{ nota.periodo.desde }} - {{ nota.periodo.hasta }}</div>
+        <div><strong>Vencimiento:</strong> {{ nota.vencimientoPago }}</div>
+      </div>
+      <div class="factura-actions">
+        <q-btn icon="save" @click="showConfirmationModalCredito(nota)" flat></q-btn>
+        <q-btn icon="visibility" @click="verPDF('credito', nota)" flat></q-btn>
+        <!-- <q-btn icon="print" @click="prepImpresion('credito', nota)" flat></q-btn> -->
+        <q-btn v-if="!nota.confirmed" icon="edit" @click="openCreditoEditModal(nota)" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de notas de débito -->
+<div v-if="notasDebito.length" class="info-container q-pa-md mb-6">
+  <q-item-label header class="info-header">Notas de Débito de la Empresa {{ empresa.nombre }}</q-item-label>
+  <div class="info-box">
+    <div v-for="nota in notasDebito" :key="nota.numero" class="info-item">
+      <div class="info-text">
+        <div><strong>Número:</strong> {{ nota.numero }}</div>
+        <div><strong>Período:</strong> {{ nota.periodo.desde }} - {{ nota.periodo.hasta }}</div>
+        <div><strong>Vencimiento:</strong> {{ nota.vencimientoPago }}</div>
+      </div>
+      <div class="factura-actions">
+        <q-btn icon="save" @click="showConfirmationModalDebito(nota)" flat></q-btn>
+        <q-btn icon="visibility" @click="verPDF('debito', nota)" flat></q-btn>
+        <!-- <q-btn icon="print" @click="prepImpresion('debito', nota)" flat></q-btn> -->
+        <q-btn v-if="!nota.confirmed" icon="edit" @click="openDebitoEditModal(nota)" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de tickets -->
+<div v-if="tickets.length" class="info-container q-pa-md mb-6">
+  <q-item-label header class="info-header">Tickets de la Empresa {{ empresa.nombre }}</q-item-label>
+  <div class="info-box">
+    <div v-for="ticket in tickets" :key="ticket.numero" class="info-item">
+      <div class="info-text">
+        <div><strong>Número:</strong> {{ ticket.numero }}</div>
+          <div><strong>Fecha:</strong> {{ ticket.fecha }}</div>
+          <div><strong>IVA:</strong> {{ ticket.condIva }}</div>
+      </div>
+      <div class="factura-actions">
+        <q-btn icon="save" @click="showConfirmationModalTicket(ticket)" flat></q-btn>
+        <q-btn icon="visibility" @click="verPDF('ticket', ticket)" flat></q-btn>
+        <!-- <q-btn icon="print" @click="prepImpresion('ticket', ticket)" flat></q-btn> -->
+        <q-btn v-if="!ticket.confirmed" icon="edit" @click="openTicketEditModal(ticket)" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sección de cheques -->
+<div v-if="cheques.length" class="info-container q-pa-md mb-6">
+  <q-item-label header class="info-header">Cheques de la Empresa {{ empresa.nombre }}</q-item-label>
+  <div class="info-box">
+    <div v-for="cheque in cheques" :key="cheque.numero" class="info-item">
+      <div class="info-text">
+        <div><strong>Número de cheque:</strong> {{ cheque.numero }}</div>
+        <div><strong>Monto:</strong> ${{ cheque.montoNumero }}</div>
+        <div><strong>Receptor:</strong> {{ cheque.receptor }}</div>
+      </div>
+      <div class="factura-actions">
+        <q-btn icon="save" @click="showConfirmationModalCheque(cheque)" flat></q-btn>
+        <q-btn icon="visibility" @click="verPDF('cheque', cheque)" flat></q-btn>
+        <!-- <q-btn icon="print" @click="prepImpresion('cheque', cheque)" flat></q-btn> -->
+        <q-btn v-if="!cheque.confirmed" icon="edit" @click="openChequeEditModal(cheque)" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<EmpresaModal ref="empresaModal" :empresa="empresa" @empresa-guardada="mostrarEmpresa"/>
+<NuevaFacturaModalEdit ref="facturaEditModal" @factura-editada="actualizarFacturaEditado" />
+<ChequeModalEdit ref="chequeModalEdit" @cheque-editado="actualizarChequeEditado" />
+<CreditoModalEdit ref="creditoEditModal" @credito-editado="actualizarCreditoEditado"/>
+<DebitoModalEdit ref="debitoEditModal" @debito-editado="actualizarDebitoEditado"/>
+<!-- <ChequePage/> -->
+
+
+<div v-if="confirmationModalFactura" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmación de la Factura</h5>
+        <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+      </div>
+      <div class="modal-footer">
+        <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModalFactura = false" flat></q-btn>
+        <q-btn class="buton-confirm" label="Confirmar" @click="guardarFacturaPDF" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+<div v-if="confirmationModalCredito" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmación de la Nota de Crédito</h5>
+        <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+      </div>
+      <div class="modal-footer">
+        <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModalCredito = false" flat></q-btn>
+        <q-btn class="buton-confirm" label="Confirmar" @click="guardarCreditoPDF" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+<div v-if="confirmationModalDebito" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmación de la Nota de Débito</h5>
+        <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+      </div>
+      <div class="modal-footer">
+        <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModalDebito = false" flat></q-btn>
+        <q-btn class="buton-confirm" label="Confirmar" @click="guardarDebitoPDF" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+<div v-if="confirmationModalCheque" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmación del Cheque</h5>
+        <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+      </div>
+      <div class="modal-footer">
+        <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModalCheque = false" flat></q-btn>
+        <q-btn class="buton-confirm" label="Confirmar" @click="guardarChequePDF" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>
+<div v-if="confirmationModalTicket" class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmación del Ticket</h5>
+        <p class="modal-subtitle">Si confirmas la operación ya no la podrás editar.</p>
+      </div>
+      <div class="modal-footer">
+        <q-btn class="buton-cancel" label="Cancelar" @click="confirmationModalTicket = false" flat></q-btn>
+        <q-btn class="buton-confirm" label="Confirmar" @click="guardarTicketPDF" flat></q-btn>
+      </div>
+    </div>
+  </div>
+</div>

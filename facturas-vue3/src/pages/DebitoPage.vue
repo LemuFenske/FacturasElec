@@ -21,9 +21,10 @@
               <div><strong>Vencimiento:</strong> {{ debito.vencimientoPago }}</div>
             </div>
             <div class="factura-actions">
-              <q-btn icon="visibility" @click="verPDF(debito)" flat></q-btn>
-              <q-btn icon="print" @click="prepImpresion(debito)" flat></q-btn>
               <q-btn icon="save" @click="showConfirmationModal(debito)" flat></q-btn>
+              <q-btn icon="visibility" @click="verPDF(debito)" flat></q-btn>
+              <q-btn v-if="!debito.confirmed" icon="edit" @click="openDebitoEditModal(debito)" flat></q-btn>
+              <!-- <q-btn icon="print" @click="prepImpresion(debito)" flat></q-btn> -->
             </div>
           </div>
         </div>
@@ -32,6 +33,11 @@
       <DebitoModal
         ref="debitoModal"
         @debito-guardado="actualizarDebito"
+      />
+
+      <DebitoModalEdit
+        ref="debitoEditModal"
+        @debito-editado="actualizarDebitoEditado"
       />
 
       <div v-if="confirmationModal" class="modal-overlay">
@@ -57,6 +63,7 @@ import { ref, onMounted } from 'vue';
 import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 import DebitoModal from '../components/DebitoModal.vue';
+import DebitoModalEdit from '../components/DebitoModalEdit.vue';
 import { usePdfStore } from '../stores/pdf.js';
 
 const debitos = ref([]);
@@ -78,9 +85,23 @@ const openDebitoModal = () => {
   modalStore.toggleDebito();
 };
 
+const openDebitoEditModal = (credito) => {
+  const modalStore = useModalStore();
+  modalStore.setDebitoToEdit(credito);
+  modalStore.toggleDebitoEdit();
+};
+
 const actualizarDebito = (nuevaNotaDebito) => {
   debitos.value.push(nuevaNotaDebito);
   $q.localStorage.set('notasDebito', debitos.value);
+};
+
+const actualizarDebitoEditado = (debitoEditado) => {
+  const index = debitos.value.findIndex(c => c.numero === debitoEditado.numero);
+  if (index !== -1) {
+    debitos.value[index] = debitoEditado;
+    $q.localStorage.set('notasDebito', debitos.value);
+  }
 };
 
 const showConfirmationModal = (debito) => {

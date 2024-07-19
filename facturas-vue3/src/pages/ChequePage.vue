@@ -23,18 +23,15 @@
             <div class="factura-actions">
               <q-btn icon="save" @click="showConfirmationModal(cheque)" flat></q-btn>
               <q-btn icon="visibility" @click="verChequePDF(cheque)" flat></q-btn>
-              <q-btn icon="print" @click="imprimirChequePDF(cheque)" flat></q-btn>
-              <q-btn v-if="!cheque.confirmed" icon="edit" @click="editCheque(cheque)" flat></q-btn>
+              <!-- <q-btn icon="print" @click="imprimirChequePDF(cheque)" flat></q-btn> -->
+              <q-btn v-if="!cheque.confirmed" icon="edit" @click="openChequeEditModal(cheque)" flat></q-btn>
             </div>
           </div>
         </div>
       </div>
 
-      <ChequeModal
-        ref="chequeModal"
-        @cheque-guardado="guardarCambiosCheque"
-        v-model:cheque="chequeActual"
-      />
+      <ChequeModal ref="chequeModal" @cheque-guardado="actualizarCheque" />
+      <ChequeModalEdit ref="chequeModalEdit" @cheque-editado="actualizarChequeEditado" />
 
       <div v-if="confirmationModal" class="modal-overlay">
         <div class="modal-container">
@@ -60,13 +57,13 @@ import { useModalStore } from '../stores/modalVariables.js';
 import { useQuasar } from 'quasar';
 import { usePdfStore } from '../stores/pdf';
 import ChequeModal from '../components/ChequeModal.vue';
+import ChequeModalEdit from '../components/ChequeModalEdit.vue';
 
 const cheques = ref([]);
 const confirmationModal = ref(false);
 const chequeActual = ref(null);
 
 const $q = useQuasar();
-
 const pdfStore = usePdfStore();
 
 onMounted(() => {
@@ -77,9 +74,15 @@ onMounted(() => {
   pdfStore.loadBarcodeImage();
 });
 
+const modalStore = useModalStore();
+
 const openChequeModal = () => {
-  const modalStore = useModalStore();
   modalStore.toggleCheque();
+};
+
+const openChequeEditModal = (cheque) => {
+  modalStore.setChequeToEdit(cheque);
+  modalStore.toggleChequeEdit();
 };
 
 const actualizarCheque = (nuevoCheque) => {
@@ -87,10 +90,23 @@ const actualizarCheque = (nuevoCheque) => {
   $q.localStorage.set('cheques', cheques.value);
 };
 
+const actualizarChequeEditado = (chequeEditado) => {
+  const index = cheques.value.findIndex(cheque => cheque.numero === chequeEditado.numero);
+  if (index !== -1) {
+    cheques.value[index] = chequeEditado;
+    $q.localStorage.set('cheques', cheques.value);
+  }
+};
+
 const showConfirmationModal = (cheque) => {
   chequeActual.value = cheque;
-  confirmationModal.value = true;
-}
+  if (!cheque.confirmed) {
+    confirmationModal.value = true;
+    return;
+  }
+  pdfStore.guardarPDF('cheque', chequeActual.value);
+  confirmationModal.value = false;
+};
 
 const guardarChequePDF = () => {
   if (chequeActual.value) {
@@ -112,26 +128,8 @@ const verChequePDF = (cheque) => {
 const imprimirChequePDF = (cheque) => {
   pdfStore.prepImpresion('cheque', cheque);
 };
-
-const editCheque = (cheque) => {
-  chequeActual.value = { ...cheque }; // Clonar el cheque para no modificar el original directamente
-  const modalStore = useModalStore();
-  modalStore.toggleCheque();
-};
-
-const guardarCambiosCheque = () => {
-  // Implementar lógica para guardar cambios en chequeActual
-  if (chequeActual.value) {
-    const chequeIndex = cheques.value.findIndex(cheque => cheque.numero === chequeActual.value.numero);
-    if (chequeIndex !== -1) {
-      cheques.value[chequeIndex] = { ...chequeActual.value };
-      $q.localStorage.set('cheques', cheques.value);
-    }
-    // Otra lógica necesaria para guardar cambios
-    // Por ejemplo, actualizar en la base de datos o realizar otras operaciones necesarias
-  }
-};
 </script>
+
 
 <style scoped>
 .page-content {
@@ -248,4 +246,3 @@ const guardarCambiosCheque = () => {
   color: #ffffff;
 }
 </style>
-

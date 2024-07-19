@@ -106,7 +106,7 @@
                 <div class="col-sm-3 q-pa-xs">
                   <q-select
                     v-model="producto.unidad"
-                    label="Unidad"
+                    label="Unidad de Medida"
                     :options="opcionesUnidades"
                   ></q-select>
                 </div>
