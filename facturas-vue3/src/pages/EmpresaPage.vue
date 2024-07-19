@@ -28,10 +28,12 @@
         </div>
       </div>
       <FacturaPage/>
+      <FacturaComponet/>
       <DebitoPage/>
       <CreditoPage/>
       <ChequePage/>
       <TicketPage/>
+      <EmpresaModal ref="empresaModal" :empresa="empresa" @empresa-guardada="mostrarEmpresa"/>
     </div>
   </div>
 
@@ -46,37 +48,18 @@ import { useQuasar } from 'quasar';
 import { useModalStore } from '../stores/modalVariables.js';
 import EmpresaModal from '../components/EmpresaModal.vue';
 import { usePdfStore } from 'src/stores/pdf.js';
-import ChequeModalEdit from 'src/components/ChequeModalEdit.vue';
-import CreditoModalEdit from 'src/components/CreditoModalEdit.vue';
-import DebitoModalEdit from 'src/components/DebitoModalEdit.vue';
-import NuevaFacturaModalEdit from 'src/components/NuevaFacturaModalEdit.vue';
-import TicketModalEdit from 'src/components/TicketModalEdit.vue';
 import ChequePage from './ChequePage.vue';
 import FacturaPage from './FacturaPage.vue';
 import TicketPage from './TicketPage.vue';
 import DebitoPage from './DebitoPage.vue';
 import CreditoPage from './CreditoPage.vue';
+import FacturaComponet from '../components/FacturaComponent.vue'
 
 const empresa = ref({});
-const facturas = ref([]);
-const notasCredito = ref([]);
-const notasDebito = ref([]);
-const tickets = ref([]);
-const cheques = ref([]);
-const confirmationModalFactura = ref(false);
-const confirmationModalCredito = ref(false);
-const confirmationModalDebito = ref(false);
-const confirmationModalCheque = ref(false);
-const confirmationModalTicket = ref(false);
 
-const facturaActual = ref(null);
-const creditoActual = ref(null);
-const debitoActual = ref(null);
-const ticketActual = ref(null);
-const chequeActual = ref(null);
 
 const $q = useQuasar();
-const pdfStore = usePdfStore();
+
 
 onMounted(() => {
   const storedEmpresa = $q.localStorage.getItem('empresa');
@@ -84,30 +67,7 @@ onMounted(() => {
     empresa.value = storedEmpresa;
   }
 
-  const storedFacturas = $q.localStorage.getItem('facturas');
-  if (storedFacturas) {
-    facturas.value = storedFacturas;
-  }
-
-  const storedNotasCredito = $q.localStorage.getItem('notasCredito');
-  if (storedNotasCredito) {
-    notasCredito.value = storedNotasCredito;
-  }
-
-  const storedNotasDebito = $q.localStorage.getItem('notasDebito');
-  if (storedNotasDebito) {
-    notasDebito.value = storedNotasDebito;
-  }
-
-  const storedTickets = $q.localStorage.getItem('tickets');
-  if (storedTickets) {
-    tickets.value = storedTickets;
-  }
-
-  const storedCheques = $q.localStorage.getItem('cheques');
-  if (storedCheques) {
-    cheques.value = storedCheques;
-  }
+  
 });
 
 const openEmpresaModal = () => {
@@ -115,145 +75,13 @@ const openEmpresaModal = () => {
   modalStore.toggleEmpresa();
 };
 
-const openFacturaEditModal = (factura) => {
-  const modalStore = useModalStore();
-  modalStore.setFacturaToEdit(factura);
-  modalStore.toggleFacturaEdit();
-};
+
 
 const mostrarEmpresa = (empresaData) => {
   empresa.value = empresaData;
   $q.localStorage.set('empresa', empresaData);
 };
 
-const actualizarFacturaEditado = (facturaEditado) => {
-  const index = facturas.value.findIndex(c => c.numero === facturaEditado.numero);
-  if (index !== -1) {
-    facturas.value[index] = facturaEditado;
-    $q.localStorage.set('facturas', facturas.value);
-  }
-};
-const showConfirmationModalFactura = (factura) => {
-  facturaActual.value = factura;
-  if (!factura.confirmed) {
-    confirmationModalFactura.value = true;
-    return;
-  }
-  pdfStore.guardarPDF('factura', facturaActual.value);
-  confirmationModalFactura.value = false;
-};
-
-const showConfirmationModalCredito = (nota) => {
-  creditoActual.value = nota;
-  if (!nota.confirmed) {
-    confirmationModalCredito.value = true;
-    return;
-  }
-  pdfStore.guardarPDF('credito', creditoActual.value);
-  confirmationModalCredito.value = false;
-};
-
-const showConfirmationModalDebito = (nota) => {
-  debitoActual.value = nota;
-  if (!nota.confirmed) {
-    confirmationModalDebito.value = true;
-    return;
-  }
-  pdfStore.guardarPDF('debito', debitoActual.value);
-  confirmationModalDebito.value = false;
-};
-
-const showConfirmationModalTicket = (nota) => {
-  ticketActual.value = nota;
-  if (!nota.confirmed) {
-    confirmationModalTicket.value = true;
-    return;
-  }
-  pdfStore.guardarPDF('ticket', ticketActual.value);
-  confirmationModalTicket.value = false;
-};
-
-const showConfirmationModalCheque = (nota) => {
-  chequeActual.value = nota;
-  if (!nota.confirmed) {
-    confirmationModalCheque.value = true;
-    return;
-  }
-  pdfStore.guardarPDF('cheque', chequeActual.value);
-  confirmationModalCheque.value = false;
-};
-// Función para ver el PDF de un documento según el tipo y los datos proporcionados
-const verPDF = (tipo, data) => {
-  pdfStore.verPDF(tipo, data);
-};
-
-
-const guardarFacturaPDF = () => {
-  if (facturaActual.value) {
-    facturaActual.value.confirmed = true;
-    const facturaIndex = facturas.value.findIndex(f => f.numero === facturaActual.value.numero);
-    if (facturaIndex !== -1) {
-      facturas.value[facturaIndex] = { ...facturaActual.value };
-      $q.localStorage.set('facturas', facturas.value);
-    }
-    pdfStore.guardarPDF('factura', facturaActual.value);
-    confirmationModal.value = false;
-  }
-};
-
-const guardarCreditoPDF = () => {
-  if (creditoActual.value) {
-    creditoActual.value.confirmed = true;
-    const creditoIndex = notasCredito.value.findIndex(c => c.numero === creditoActual.value.numero);
-    if (creditoIndex !== -1) {
-      notasCredito.value[creditoIndex] = { ...creditoActual.value };
-      $q.localStorage.set('notasCredito', notasCredito.value);
-    }
-    pdfStore.guardarPDF('credito', creditoActual.value);
-    confirmationModalCredito.value = false;
-  }
-};
-const guardarDebitoPDF = () => {
-  if (debitoActual.value) {
-    debitoActual.value.confirmed = true;
-    const debitoIndex = notasDebito.value.findIndex(d => d.numero === debitoActual.value.numero);
-    if (debitoIndex !== -1) {
-      notasDebito.value[debitoIndex] = { ...debitoActual.value };
-      $q.localStorage.set('notasDebito', notasDebito.value);
-    }
-    pdfStore.guardarPDF('debito', debitoActual.value);
-    confirmationModalDebito.value = false;
-  }
-};
-
-const guardarTicketPDF = () => {
-  if (ticketActual.value) {
-    ticketActual.value.confirmed = true;
-    const ticketIndex = tickets.value.findIndex(t => t.numero === ticketActual.value.numero);
-    if (ticketIndex !== -1) {
-      tickets.value[ticketIndex] = { ...ticketActual.value };
-      $q.localStorage.set('tickets', tickets.value);
-    }
-    pdfStore.guardarPDF('ticket', ticketActual.value);
-    confirmationModalTicket.value = false;
-  }
-};
-
-const guardarChequePDF = () => {
-  if (chequeActual.value) {
-    chequeActual.value.confirmed = true;
-    const chequeIndex = cheques.value.findIndex(cheque => cheque.numero === chequeActual.value.numero);
-    if (chequeIndex !== -1) {
-      cheques.value[chequeIndex] = { ...chequeActual.value };
-      $q.localStorage.set('cheques', cheques.value);
-    }
-    pdfStore.guardarPDF('cheque', chequeActual.value);
-    confirmationModalCheque.value = false;
-  }
-};
-// const guardarPDF = (tipo, data) => {
-//   pdfStore.guardarPDF(tipo, data);
-// };
 
 </script>
 
@@ -263,12 +91,10 @@ const guardarChequePDF = () => {
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  
 }
 
 .button-container {
   width: 100%;
-  
   text-align: center;
   margin-bottom: 16px;
 }
@@ -288,18 +114,21 @@ const guardarChequePDF = () => {
 .btn-create:hover {
   background-color: #00472c;
 }
+
 .all-container {
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-top: 0;
+  margin-top: 0; /* Ajusta el margen superior a 0 */
 }
+
 .max-container {
   display: flex;
   flex-direction: column;
   width: 100%;
- 
+  margin-bottom: 100px; /* Asegura que haya espacio suficiente para el contenido */
 }
+
 .info-container {
   width: 100%;
   border: 1px solid #ddd;
@@ -392,3 +221,4 @@ const guardarChequePDF = () => {
   color: #ffffff;
 }
 </style>
+
