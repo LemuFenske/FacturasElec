@@ -9,14 +9,14 @@
         <div>
           <q-list class="full-width">
             <q-item-label header>Datos del Cheque</q-item-label>
-            <q-item>
+            <!-- <q-item>
               <q-input
                 class="full-width"
                 v-model="cheque.numero"
                 type="number"
                 label="Número de Cheque"
               ></q-input>
-            </q-item>
+            </q-item> -->
             <q-item>
               <q-input
                 class="full-width"

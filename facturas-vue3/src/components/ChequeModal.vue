@@ -15,6 +15,8 @@
                 v-model="cheque.numero"
                 type="number"
                 label="Número de Cheque"
+                :error="numeroChequeRepetido"
+                error-message="El número de cheque ya existe"
               ></q-input>
             </q-item>
             <q-item>
@@ -85,7 +87,8 @@
             </q-item>
           </q-list>
         </div>
-        <q-btn label="Guardar" @click="guardarCheque" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el cheque.</div>
+        <q-btn :disable="!isFormValid || numeroChequeRepetido" label="Guardar" @click="guardarCheque" class="buttonsave q-mt-md"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -122,6 +125,42 @@ const closeModal = () => {
   modalStore.toggleCheque(); 
 };
 
+const limpiarInputs = () => {
+  cheque.value = {
+    confirmed: false,
+    numero: '',
+    banco: '',
+    domicilioPago: '',
+    ciudad: '',
+    dia: '',
+    mes: '',
+    ano: '',
+    receptor: '',
+    montoNumero: '',
+    montoEscrito: '',
+  };
+};
+
+const isFormValid = computed(() => {
+  return (
+    cheque.value.numero &&
+    cheque.value.banco &&
+    cheque.value.domicilioPago &&
+    cheque.value.ciudad &&
+    cheque.value.dia &&
+    cheque.value.mes &&
+    cheque.value.ano &&
+    cheque.value.receptor &&
+    cheque.value.montoNumero &&
+    cheque.value.montoEscrito
+  );
+});
+
+const numeroChequeRepetido = computed(() => {
+  let cheques = $q.localStorage.getItem('cheques') || [];
+  return cheques.some(c => c.numero === cheque.value.numero);
+});
+
 const guardarCheque = () => {
   let cheques = $q.localStorage.getItem('cheques') || [];
 
@@ -138,8 +177,11 @@ const guardarCheque = () => {
   emit('cheque-guardado', nuevoCheque);
 
   closeModal();
+  limpiarInputs();
 };
 </script>
+
+
 
 <style scoped>
 .centered-modal {

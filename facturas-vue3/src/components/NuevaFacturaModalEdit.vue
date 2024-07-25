@@ -29,7 +29,7 @@
                 </q-item>
               </div>
               <div class="row">
-                <q-item class="half-width">
+                <!-- <q-item class="half-width">
                   <q-input
                     v-model="factura.numero"
                     @input="formatNumero"
@@ -37,7 +37,7 @@
                     label="Número de Factura"
                     class="full-width"
                   ></q-input>
-                </q-item>
+                </q-item> -->
                 <q-item class="half-width">
                   <q-select
                     v-model="factura.condVenta"

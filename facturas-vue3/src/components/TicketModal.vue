@@ -15,46 +15,33 @@
                 v-model="ticket.numero"
                 type="text"
                 label="Número de Ticket"
+                :error="numeroTicketRepetido"
+                error-message="El número de ticket ya existe"
               ></q-input>
             </q-item>
             <q-item>
               <q-input
                 class="full-width"
-                v-model="ticket.fecha"
+                v-model="ticket.ptoVenta"
+                type="text"
+                label="Punto de Venta"
+                @blur="formatPtoVenta"
+              ></q-input>
+            </q-item>
+            <q-item>
+              <q-input
+                class="full-width"
+                v-model="ticket.fechaEmision"
                 type="date"
-                label="Fecha"
+                label="Fecha de Emisión"
               ></q-input>
             </q-item>
             <q-item>
               <q-input
                 class="full-width"
-                v-model="ticket.cuit"
-                type="text"
-                label="CUIT"
-              ></q-input>
-            </q-item>
-            <q-item>
-              <q-input
-                class="full-width"
-                v-model="ticket.apellidoNombre"
-                type="text"
-                label="Apellido y Nombre"
-              ></q-input>
-            </q-item>
-            <q-item>
-              <q-input
-                class="full-width"
-                v-model="ticket.razonSocial"
-                type="text"
-                label="Razón Social"
-              ></q-input>
-            </q-item>
-            <q-item>
-              <q-input
-                class="full-width"
-                v-model="ticket.domicilio"
-                type="text"
-                label="Domicilio"
+                v-model="ticket.fechaCobro"
+                type="date"
+                label="Fecha de Cobro"
               ></q-input>
             </q-item>
             <q-item>
@@ -84,7 +71,7 @@
                 ></q-input>
               </q-item>
               <q-item>
-              <q-select
+                <q-select
                   class="full-width"
                   v-model="producto.unidad"
                   label="Unidad de medida"
@@ -114,7 +101,8 @@
             <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
-        <q-btn label="Guardar" @click="guardarTicket" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el cheque.</div>
+        <q-btn :disable="!isFormValid || numeroTicketRepetido" label="Guardar" @click="guardarTicket" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -132,11 +120,9 @@ const isOpen = computed(() => modalStore.ticketIsOpen);
 const ticket = ref({
   confirmed: false,
   numero: '',
-  fecha: '',
-  cuit: '',
-  apellidoNombre: '',
-  razonSocial: '',
-  domicilio: '',
+  ptoVenta: '',
+  fechaEmision: '',
+  fechaCobro: '',
   condIva: '',
   productosFactura: [
     {
@@ -149,7 +135,6 @@ const ticket = ref({
   ]
 });
 
-// Watcher to calculate subtotal whenever cantidad or precio changes
 watch(ticket.value.productosFactura, (newVal) => {
   newVal.forEach(producto => {
     producto.subtotal = producto.cantidad * producto.precio;
@@ -191,11 +176,75 @@ const calcularSubtotal = (producto) => {
   producto.subtotal = producto.cantidad * producto.precio;
 };
 
-const guardarTicket = () => {
+// Método para formatear la fecha a dd/mm/aaaa
+const formatFecha = (fecha) => {
+  const [year, month, day] = fecha.split('-');
+  return `${day}/${month}/${year}`;
+};
+
+// Método para formatear punto de venta
+const formatPtoVenta = () => {
+  ticket.value.ptoVenta = ('0000' + ticket.value.ptoVenta).substr(-4);
+};
+
+const limpiarInputs = () => {
+  ticket.value = {
+    confirmed: false,
+    numero: '',
+    ptoVenta: '',
+    fechaEmision: '',
+    fechaCobro: '',
+    condIva: '',
+    productosFactura: [
+      {
+        nombre: '',
+        cantidad: 0,
+        precio: 0,
+        unidad: '',
+        subtotal: 0
+      }
+    ]
+  };
+  // Establecer la fecha inicial en el formato correcto
+  ticket.value.fechaEmision = formatFecha(new Date().toISOString().split('T')[0]);
+};
+
+const isFormValid = computed(() => {
+  return (
+    ticket.value.numero &&
+    ticket.value.ptoVenta &&
+    ticket.value.fechaEmision &&
+    ticket.value.fechaCobro &&
+    ticket.value.condIva &&
+    ticket.value.productosFactura.every(producto =>
+      producto.nombre && producto.cantidad > 0 && producto.precio > 0 && producto.unidad
+    )
+  );
+});
+
+const numeroTicketRepetido = computed(() => {
   let tickets = $q.localStorage.getItem('tickets') || [];
+  return tickets.some(t => t.numero === ticket.value.numero);
+});
+
+const guardarTicket = () => {
+  if (!isFormValid.value || numeroTicketRepetido.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'Hay errores en el formulario o el número de ticket ya existe.',
+    });
+    return;
+  }
+
+  let tickets = $q.localStorage.getItem('tickets') || [];
+
+  // Asegurar que el punto de venta tenga 4 dígitos
+  formatPtoVenta();
 
   const nuevoTicket = {
     ...ticket.value,
+    fechaEmision: formatFecha(ticket.value.fechaEmision),
+    fechaCobro: formatFecha(ticket.value.fechaCobro),
     index: tickets.length,
   };
 
@@ -206,8 +255,18 @@ const guardarTicket = () => {
   emit('ticket-guardado', nuevoTicket);
 
   closeModal();
+  limpiarInputs();
 };
+
+// Establecer la fecha inicial en el formato correcto
+ticket.value.fechaEmision = formatFecha(new Date().toISOString().split('T')[0]);
+
 </script>
+
+
+
+
+
 
 
 

@@ -11,7 +11,7 @@
             <div class="column">
               <q-input
                 v-model="empresaLocal.nombre"
-                label="Nombre de la Empresa"
+                label="Nombre de Fantasia"
                 class="full-width"
               ></q-input>
             </div>
@@ -63,7 +63,7 @@
             <div class="column">
               <q-input
                 v-model="empresaLocal.fechaInicio"
-                float-label="Fecha de Inicio de Actividades"
+                label="Fecha de Inicio de Actividades"
                 type="date"
                 format="YYYY/MM/DD"
                 class="full-width"
@@ -78,7 +78,8 @@
             </div>
           </div>
         </div>
-        <q-btn label="Guardar" @click="guardarEmpresa" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el cheque.</div>
+        <q-btn :disable="!isFormValid" label="Guardar" @click="guardarEmpresa" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -130,24 +131,56 @@ watch(isOpen, (newValue) => {
   }
 });
 
+const isFormValid = computed(() => {
+  return (
+    empresaLocal.value.nombre &&
+    empresaLocal.value.cuit &&
+    empresaLocal.value.direccion &&
+    empresaLocal.value.condIva &&
+    empresaLocal.value.ingBrutos &&
+    empresaLocal.value.fechaInicio &&
+    empresaLocal.value.nombreTitular 
+  );
+});
+
 const closeModal = () => {
   const modalStore = useModalStore();
   modalStore.toggleEmpresa();
 };
 
+const formatFecha = (fecha) => {
+  const date = new Date(fecha);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const guardarEmpresa = () => {
   const empresaData = { ...empresaLocal.value };
+  empresaData.fechaInicio = formatFecha(empresaData.fechaInicio);
   $q.localStorage.set('empresa', empresaData);
   emit('empresa-guardada', empresaData);
   closeModal();
+};
+
+const parseFecha = (fecha) => {
+  const [day, month, year] = fecha.split('/');
+  return `${year}-${month}-${day}`;
 };
 
 const loadEmpresaData = () => {
   const storedEmpresa = $q.localStorage.getItem('empresa');
   if (storedEmpresa) {
     empresaLocal.value = storedEmpresa;
+    if (empresaLocal.value.fechaInicio) {
+      empresaLocal.value.fechaInicio = parseFecha(empresaLocal.value.fechaInicio);
+    }
   } else if (props.empresa) {
     empresaLocal.value = { ...props.empresa };
+    if (empresaLocal.value.fechaInicio) {
+      empresaLocal.value.fechaInicio = parseFecha(empresaLocal.value.fechaInicio);
+    }
   }
 };
 
@@ -155,6 +188,7 @@ onMounted(() => {
   loadEmpresaData();
 });
 </script>
+
 
 
 
@@ -169,7 +203,7 @@ onMounted(() => {
 }
 
 .modal-card {
-  width: 80vw;
+  width: 100vw;
   max-width: 800px;
   border-radius: 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);

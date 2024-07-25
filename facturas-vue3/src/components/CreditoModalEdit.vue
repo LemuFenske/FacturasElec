@@ -9,14 +9,14 @@
           <div>
             <q-list class="full-width">
               <q-item-label header>Datos de la Nota de Crédito</q-item-label>
-              <q-item>
+              <!-- <q-item>
                 <q-input
                   class="full-width"
                   v-model="notaCredito.numero"
                   type="number"
                   label="Número de Nota de Crédito"
                 ></q-input>
-              </q-item>
+              </q-item> -->
               <q-item>
                 <q-select
                   class="full-width"

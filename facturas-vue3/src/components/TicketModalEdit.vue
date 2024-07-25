@@ -9,14 +9,14 @@
           <div>
             <q-list class="full-width">
               <q-item-label header>Datos del Ticket</q-item-label>
-              <q-item>
+              <!-- <q-item>
                 <q-input
                   class="full-width"
                   v-model="ticket.numero"
                   type="text"
                   label="Número de Ticket"
                 ></q-input>
-              </q-item>
+              </q-item> -->
               <q-item>
                 <q-input
                   class="full-width"

@@ -130,48 +130,6 @@ module.exports = configure(function (/* ctx */) {
       // extendSSRWebserverConf (esbuildConf) {},
       // extendPackageJson (json) {},
 
-      pwa: {
-        workboxPluginMode: 'GenerateSW', // o 'InjectManifest' si necesitas personalizar el Service Worker
-        workboxOptions: {}, // Opciones para Workbox (vacío está bien para la configuración básica)
-  
-        manifest: {
-          name: `Facturas Electronicas`,
-          short_name: `Facturas`,
-          description: `Aplicación para simular facturas electronicas`,
-          display: 'standalone',
-          orientation: 'portrait',
-          background_color: '#ffffff',
-          theme_color: '#027be3',
-          icons: [
-            {
-              src: 'icons/icon-128x128.png',
-              sizes: '128x128',
-              type: 'image/png'
-            },
-            {
-              src: 'icons/icon-192x192.png',
-              sizes: '192x192',
-              type: 'image/png'
-            },
-            {
-              src: 'icons/icon-256x256.png',
-              sizes: '256x256',
-              type: 'image/png'
-            },
-            {
-              src: 'icons/icon-384x384.png',
-              sizes: '384x384',
-              type: 'image/png'
-            },
-            {
-              src: 'icons/icon-512x512.png',
-              sizes: '512x512',
-              type: 'image/png'
-            }
-          ]
-        }
-      },
-
       // manualStoreHydration: true,
       // manualPostHydrationTrigger: true,
 
@@ -185,7 +143,7 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
+      workboxMode: 'injectManifest', // or 'injectManifest'
       injectPwaMetaTags: true, // boolean | (() => string)
       swFilename: 'sw.js', // should be .js (as it's the distribution file, not the input file)
       manifestFilename: 'manifest.json',

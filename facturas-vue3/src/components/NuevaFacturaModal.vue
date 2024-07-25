@@ -11,13 +11,17 @@
             <q-item-label header>Datos generales</q-item-label>
             <div class="row">
               <q-item class="half-width">
-                <q-select
-                  v-model="factura.condTipo"
-                  label="Tipo de Factura"
-                  :options="opcionesTipo"
+                <q-input
+                  v-model="factura.numero"
+                  @input="formatNumero"
+                  type="number"
+                  label="Número de Factura"
                   class="full-width"
-                ></q-select>
+                  :error="numeroFacturaRepetido"
+                  error-message="El número de Factura ya existe"
+                ></q-input>
               </q-item>
+              
               <q-item class="half-width">
                 <q-input
                   v-model="factura.ptoVenta"
@@ -30,13 +34,12 @@
             </div>
             <div class="row">
               <q-item class="half-width">
-                <q-input
-                  v-model="factura.numero"
-                  @input="formatNumero"
-                  type="number"
-                  label="Número de Factura"
+                <q-select
+                  v-model="factura.condTipo"
+                  label="Tipo de Factura"
+                  :options="opcionesTipo"
                   class="full-width"
-                ></q-input>
+                ></q-select>
               </q-item>
               <q-item class="half-width">
                 <q-select
@@ -103,12 +106,15 @@
                 <div class="col-sm-3 q-pa-xs">
                   <q-input v-model="producto.precio" type="number" label="Precio Unitario"></q-input>
                 </div>
-                <div class="col-sm-3 q-pa-xs">
+                <div class="col-sm-2 q-pa-xs">
                   <q-select
                     v-model="producto.unidad"
                     label="Unidad de Medida"
                     :options="opcionesUnidades"
                   ></q-select>
+                </div>
+                <div class="col-sm-1 q-pa-xs">
+                  <q-btn icon="delete" flat round dense color="negative" @click="eliminarProducto(index)"></q-btn>
                 </div>
                 <div class="col-sm-1 q-pa-xs" v-if="index === factura.productosFactura.length - 1">
                   <q-btn icon="add_box" flat round dense color="primary" @click="agregarProducto"></q-btn>
@@ -128,7 +134,7 @@
                   <q-input v-model="subtotal" readonly label="Subtotal"></q-input>
                 </div>
                 <div class="col-sm-4 q-pa-xs">
-                  <q-input v-model="iva" readonly label="IVA"></q-input>
+                  <q-input v-model="factura.ivaPorcentaje" type="number" label="IVA (%)"></q-input>
                 </div>
                 <div class="col-sm-4 q-pa-xs">
                   <q-input v-model="total" readonly label="Total"></q-input>
@@ -138,18 +144,19 @@
           </q-list>
         </div>
 
-        <q-btn label="Guardar" @click="guardarFactura" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el comprobante.</div>
+        <q-btn :disable="!isFormValid || numeroFacturaRepetido" label="Guardar" @click="guardarFactura" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
 </template>
 
 
+
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { useModalStore } from '../stores/modalVariables.js';
-
 
 const modalStore = useModalStore();
 
@@ -164,6 +171,7 @@ const factura = ref({
   numero: '',
   fecha: new Date().toISOString().split('T')[0],
   condVenta: '',
+  ivaPorcentaje: 0,
   cliente: {
     cuit: '',
     nombre: '',
@@ -180,52 +188,37 @@ const factura = ref({
   ],
 });
 
-
 const opcionesTipo = ['A', 'B', 'C'];
 const opcionesCondVenta = ['Contado', 'Crédito'];
 const opcionesIvaCliente = ['Responsable Inscripto', 'Monotributista', 'Exento', 'No Responsable', 'Consumidor Final'];
 const opcionesUnidades = ['Unidad', 'Kg', 'Litro'];
-const ivaPorcentaje = 21; 
+const ivaPorcentaje = ref(factura.value.ivaPorcentaje);
 
+watch(() => factura.value.ivaPorcentaje, (newVal) => {
+  ivaPorcentaje.value = newVal;
+});
 
 const subtotal = computed(() =>
   factura.value.productosFactura.reduce((sum, producto) => sum + producto.precio * producto.cantidad, 0)
 );
-const iva = computed(() => subtotal.value * (ivaPorcentaje / 100));
+const iva = computed(() => subtotal.value * (ivaPorcentaje.value / 100));
 const total = computed(() => subtotal.value + iva.value);
-
 
 const $q = useQuasar();
 
-
 const emit = defineEmits(['factura-guardada']);
-
 
 const closeModal = () => {
   modalStore.toggleFactura(); 
 };
 
-// Método para guardar la factura
-const guardarFactura = () => {
-  let facturas = $q.localStorage.getItem('facturas') || [];
-
-  const nuevaFactura = {
-    ...factura.value,
-    subtotal: subtotal.value,
-    iva: iva.value,
-    total: total.value,
-    index: facturas.length,
-    editable: true,
-  };
-
-  facturas.push(nuevaFactura);
-
-  $q.localStorage.set('facturas', facturas);
-
-  // Emitir evento
-  emit('factura-guardada', nuevaFactura);
-
-  closeModal();
+// Método para formatear la fecha a dd/mm/aaaa
+const formatFecha = (fecha) => {
+  const date = new Date(fecha);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 // Método para formatear punto de venta
@@ -240,6 +233,94 @@ const formatNumero = (event) => {
   factura.value.numero = ('00000000' + val2).substr(-8);
 };
 
+// Método para limpiar los inputs
+const limpiarInputs = () => {
+  factura.value = {
+    confirmed: false,
+    condTipo: '',
+    ptoVenta: '',
+    numero: '',
+    fecha: new Date().toISOString().split('T')[0],
+    condVenta: '',
+    cliente: {
+      cuit: '',
+      nombre: '',
+      direccion: '',
+      condIva: '',
+    },
+    productosFactura: [
+      {
+        nombre: '',
+        cantidad: 0,
+        precio: 0,
+        unidad: '',
+      },
+    ],
+  };
+};
+
+// Computed para verificar si el formulario es válido
+const isFormValid = computed(() => {
+  return (
+    factura.value.condTipo &&
+    factura.value.ptoVenta &&
+    factura.value.numero &&
+    factura.value.fecha &&
+    factura.value.condVenta &&
+    factura.value.cliente.cuit &&
+    factura.value.cliente.nombre &&
+    factura.value.cliente.direccion &&
+    factura.value.cliente.condIva &&
+    factura.value.productosFactura.every(producto => 
+      producto.nombre &&
+      producto.cantidad > 0 &&
+      producto.precio > 0 &&
+      producto.unidad
+    )
+  );
+});
+
+// Computed para verificar si el número de factura está repetido
+const numeroFacturaRepetido = computed(() => {
+  let facturas = $q.localStorage.getItem('facturas') || [];
+  return facturas.some(facturaItem => facturaItem.numero === factura.value.numero );
+});
+
+// Método para guardar la factura
+const guardarFactura = () => {
+  let facturas = $q.localStorage.getItem('facturas') || [];
+
+  if (numeroFacturaRepetido.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'El número de Factura ya existe.',
+      timeout: 2000,
+    });
+    return;
+  }
+
+  // Asegurar que el punto de venta tenga 4 dígitos
+  factura.value.ptoVenta = ('0000' + factura.value.ptoVenta).substr(-4);
+
+  const nuevaFactura = {
+    ...factura.value,
+    fecha: formatFecha(factura.value.fecha),
+    subtotal: subtotal.value,
+    iva: iva.value,
+    total: total.value,
+    index: facturas.length,
+    editable: true,
+  };
+
+  facturas.push(nuevaFactura);
+  $q.localStorage.set('facturas', facturas);
+
+  // Emitir evento
+  emit('factura-guardada', nuevaFactura);
+
+  closeModal();
+  limpiarInputs();
+};
 
 const agregarProducto = () => {
   factura.value.productosFactura.push({
@@ -250,7 +331,14 @@ const agregarProducto = () => {
   });
 };
 
+const eliminarProducto = (index) => {
+  if (factura.value.productosFactura.length > 1) {
+    factura.value.productosFactura.splice(index, 1);
+  }
+};
 </script>
+
+
 
 
 <style scoped>

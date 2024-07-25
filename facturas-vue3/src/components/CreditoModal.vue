@@ -15,6 +15,8 @@
                 v-model="notaCredito.numero"
                 type="number"
                 label="Número de Nota de Crédito"
+                :error="numeroNotaCreditoRepetido"
+                error-message="El número de Nota de Crédito ya existe"
               ></q-input>
             </q-item>
             <q-item>
@@ -175,7 +177,8 @@
             <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
-        <q-btn label="Guardar" @click="guardarNotaCredito" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el comprobante.</div>
+        <q-btn :disable="!isFormValid || numeroNotaCreditoRepetido" label="Guardar" @click="guardarNotaCredito" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -276,18 +279,121 @@ watch(notaCredito.value.productosServicios, (newVal) => {
   });
 }, { deep: true });
 
+const formatFecha = (fecha) => {
+  const date = new Date(fecha);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+const formatPtoVenta = () => {
+  notaCredito.value.ptoVenta = ('0000' + notaCredito.value.ptoVenta).substr(-4);
+};
+
+const limpiarInputs = () => {
+  notaCredito.value = {
+    numero: '',
+    confirmed: false,
+    fecha: new Date().toISOString().split('T')[0],
+    periodo: {
+      desde: '',
+      hasta: ''
+    },
+    condTipo: '',
+    fechaEmision: '',
+    ptoVenta: '',
+    vencimientoPago: '',
+    cliente: {
+      condIva: '',
+      apellidoNombre: '',
+      cuit: '',
+      domicilio: '',
+      razonSocial: '',
+      condVenta: '',
+    },
+    productosServicios: [
+      {
+        nombre: '',
+        cantidad: 0,
+        unidadMedida: '',
+        precioUnitario: 0,
+        subtotal: 0,
+        iva: 0,
+        subtotalConIva: 0
+      }
+    ]
+  };
+};
+
+const isFormValid = computed(() => {
+  return (
+    notaCredito.value.numero &&
+    notaCredito.value.condTipo &&
+    notaCredito.value.fechaEmision &&
+    notaCredito.value.ptoVenta &&
+    notaCredito.value.vencimientoPago &&
+    notaCredito.value.periodo.desde &&
+    notaCredito.value.periodo.hasta &&
+    notaCredito.value.cliente.condIva &&
+    notaCredito.value.cliente.apellidoNombre &&
+    notaCredito.value.cliente.cuit &&
+    notaCredito.value.cliente.domicilio &&
+    notaCredito.value.cliente.razonSocial &&
+    notaCredito.value.cliente.condVenta &&
+    notaCredito.value.productosServicios.every(producto => 
+      producto.nombre &&
+      producto.cantidad > 0 &&
+      producto.unidadMedida &&
+      producto.precioUnitario > 0
+    )
+  );
+});
+
+const numeroNotaCreditoRepetido = computed(() => {
+  let notasCredito = $q.localStorage.getItem('notasCredito') || [];
+  return notasCredito.some(nota => nota.numero === notaCredito.value.numero);
+});
+
 const guardarNotaCredito = () => {
   let notasCredito = $q.localStorage.getItem('notasCredito') || [];
+
+  if (numeroNotaCreditoRepetido.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'El número de Nota de Crédito ya existe.',
+      timeout: 2000,
+    });
+    return;
+  }
+
+  formatPtoVenta();
+
   const nuevaNotaCredito = {
     ...notaCredito.value,
+    fecha: formatFecha(notaCredito.value.fecha),
+    periodo: {
+      desde: formatFecha(notaCredito.value.periodo.desde),
+      hasta: formatFecha(notaCredito.value.periodo.hasta),
+    },
+    fechaEmision: formatFecha(notaCredito.value.fechaEmision),
+    vencimientoPago: formatFecha(notaCredito.value.vencimientoPago),
     index: notasCredito.length,
   };
+
   notasCredito.push(nuevaNotaCredito);
   $q.localStorage.set('notasCredito', notasCredito);
+
   emit('credito-guardado', nuevaNotaCredito);
+
   closeModal();
+  limpiarInputs();
 };
 </script>
+
+
+
+
 
   
   <style scoped>

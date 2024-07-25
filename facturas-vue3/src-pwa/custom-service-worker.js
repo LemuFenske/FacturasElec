@@ -10,7 +10,8 @@ import { clientsClaim } from 'workbox-core';
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 
-const PWA=location.pathname.split('/')[1], ver='0.0.1';//ver debe cambiar para actualizar el cache
+const PWA = location.pathname.split('/')[1];
+const ver = '0.0.1'; // ver debe cambiar para actualizar el cache
 
 self.skipWaiting();
 clientsClaim();
@@ -18,10 +19,14 @@ clientsClaim();
 // Define version
 
 // Use with precache injection
-precacheAndRoute([
-  { url: '/facturas-test/version.json', revision: null }, // Precache version.json
-  ...self.__WB_MANIFEST // Precache other assets
-]);
+const precacheManifest = self.__WB_MANIFEST;
+
+// Optionally add version.json if not already in __WB_MANIFEST
+if (!precacheManifest.some(entry => entry.url === '/facturas-test/version.json')) {
+  precacheManifest.push({ url: '/facturas-test/version.json', revision: null });
+}
+
+precacheAndRoute(precacheManifest);
 
 cleanupOutdatedCaches();
 
@@ -37,26 +42,27 @@ if (process.env.MODE !== 'ssr' || process.env.PROD) {
 }
 
 // Listen for messages from the client
-self.addEventListener('message', function(event) {
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.action === 'getVersion') {
+    event.ports[0].postMessage({ version: ver });
+  }
   if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();//actualiza sw
+    self.skipWaiting(); // actualiza sw
     event.ports[0].postMessage({
-      "version": PWA+ver
+      version: PWA + ver,
     });
-  }else if (event.data.action === 'getSWVer') {
+  } else if (event.data.action === 'getSWVer') {
     event.ports[0].postMessage({
-      "version": PWA+ver
+      version: PWA + ver,
     });
-  }else if (event.data.action === 'getCliCnt') {
-    self.clients.matchAll()
-    .then(wins =>{ 
+  } else if (event.data.action === 'getCliCnt') {
+    self.clients.matchAll().then((wins) => {
       event.ports[0].postMessage({
-        "cliCnt": wins.length
+        cliCnt: wins.length,
       });
     });
   }
 });
-
 
 // import { clientsClaim } from 'workbox-core';
 // import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';

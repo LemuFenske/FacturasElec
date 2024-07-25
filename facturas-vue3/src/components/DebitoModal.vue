@@ -15,6 +15,8 @@
                 v-model="notaDebito.numero"
                 type="number"
                 label="Número de Nota de Débito"
+                :error="numeroNotaDebitoRepetido"
+                error-message="El número de Nota de Débito ya existe"
               ></q-input>
             </q-item>
             <q-item>
@@ -175,7 +177,8 @@
             <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
-        <q-btn label="Guardar" @click="guardarNotaDebito" class="buttonsave"></q-btn>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el comprobante.</div>
+        <q-btn :disable="!isFormValid || numeroNotaDebitoRepetido" label="Guardar" @click="guardarNotaDebito" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
@@ -276,18 +279,120 @@ watch(notaDebito.value.productosServicios, (newVal) => {
   });
 }, { deep: true });
 
+// Método para formatear la fecha a dd/mm/aaaa
+const formatFecha = (fecha) => {
+  const date = new Date(fecha);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Método para formatear punto de venta
+const formatPtoVenta = () => {
+  notaDebito.value.ptoVenta = ('0000' + notaDebito.value.ptoVenta).substr(-4);
+};
+
+const limpiarInputs = () => {
+  notaDebito.value = {
+    numero: '',
+    confirmed: false,
+    fecha: new Date().toISOString().split('T')[0],
+    periodo: {
+      desde: '',
+      hasta: ''
+    },
+    condTipo: '',
+    fechaEmision: '',
+    ptoVenta: '',
+    vencimientoPago: '',
+    cliente: {
+      condIva: '',
+      apellidoNombre: '',
+      cuit: '',
+      domicilio: '',
+      razonSocial: '',
+      condVenta: '',
+    },
+    productosServicios: [
+      {
+        nombre: '',
+        cantidad: 0,
+        unidadMedida: '',
+        precioUnitario: 0,
+        subtotal: 0,
+        iva: 0,
+        subtotalConIva: 0
+      }
+    ]
+  };
+};
+
+
+const isFormValid = computed(() => {
+  return (
+    notaDebito.value.numero &&
+    notaDebito.value.condTipo &&
+    notaDebito.value.fechaEmision &&
+    notaDebito.value.ptoVenta &&
+    notaDebito.value.vencimientoPago &&
+    notaDebito.value.periodo.desde &&
+    notaDebito.value.periodo.hasta &&
+    notaDebito.value.cliente.condIva &&
+    notaDebito.value.cliente.apellidoNombre &&
+    notaDebito.value.cliente.cuit &&
+    notaDebito.value.cliente.domicilio &&
+    notaDebito.value.cliente.razonSocial &&
+    notaDebito.value.cliente.condVenta &&
+    notaDebito.value.productosServicios.every(producto => 
+      producto.nombre &&
+      producto.cantidad > 0 &&
+      producto.unidadMedida &&
+      producto.precioUnitario > 0
+    )
+  );
+});
+
+const numeroNotaDebitoRepetido = computed(() => {
+  let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+  return notasDebito.some(nota => nota.numero === notaDebito.value.numero);
+});
+
 const guardarNotaDebito = () => {
   let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+
+  if (numeroNotaDebitoRepetido.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'El número de Nota de Crédito ya existe.',
+      timeout: 2000,
+    });
+    return;
+  }
+
+
+  // Asegurar que el punto de venta tenga 4 dígitos
+  formatPtoVenta();
+
   const nuevaNotaDebito = {
     ...notaDebito.value,
+    fecha: formatFecha(notaDebito.value.fecha),
+    periodo: {
+      desde: formatFecha(notaDebito.value.periodo.desde),
+      hasta: formatFecha(notaDebito.value.periodo.hasta),
+    },
+    fechaEmision: formatFecha(notaDebito.value.fechaEmision),
+    vencimientoPago: formatFecha(notaDebito.value.vencimientoPago),
     index: notasDebito.length,
   };
   notasDebito.push(nuevaNotaDebito);
   $q.localStorage.set('notasDebito', notasDebito);
   emit('debito-guardado', nuevaNotaDebito);
   closeModal();
+  limpiarInputs()
 };
 </script>
+
 
 
   

@@ -3,11 +3,27 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import afipImage from '../assets/AFIP.png';
+import afipImage from '../assets/AFIPQR.png';
+import qrticket from '../assets/QRTICKET.png'
 
 export const usePdfStore = defineStore('pdf', () => {
   const $q = useQuasar();
   const barcodeImage = ref(null);
+  const ticketImage = ref(null);
+  
+
+  const loadTicketImage = () => {
+    const img = new Image();
+    img.src = qrticket;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      ticketImage.value = canvas.toDataURL('image/png');
+    };
+  }
 
   const loadBarcodeImage = () => {
     const img = new Image();
@@ -34,11 +50,13 @@ export const usePdfStore = defineStore('pdf', () => {
     const pageHeight = 297;
 
     const empresa = $q.localStorage.getItem('empresa') || {
-      nombre: "Empresa Ejemplo",
+      nombre: "Nombre Ejemplo",
+      razonSocial: "Empresa Ejemplo",
       direccion: "Empresa 123",
       cuit: "20109080601",
       ingBrutos: "3000",
-      condIva: "Consumidor Final"
+      condIva: "Consumidor Final",
+      fechaInicio: "23/07/2024",
   };
 
     switch (tipo) {
@@ -66,7 +84,7 @@ export const usePdfStore = defineStore('pdf', () => {
         doc.text(`Fecha: ${data.fecha}`, 107, 27);
         doc.text(`CUIT: ${empresa.cuit}`, 107, 31);
         doc.text(`Ingresos Brutos: ${empresa.ingBrutos}`, 107, 35);
-        doc.text(`Inicio Actividades: ${data.inicioActividades || '2024/05/31'}`, 107, 39);
+        doc.text(`Inicio Actividades: ${empresa.fechaInicio || '20/07/2024'}`, 107, 39);
 
         // Tipo de factura (en el centro, pegado al borde superior)
         doc.setFontSize(20);
@@ -135,81 +153,83 @@ export const usePdfStore = defineStore('pdf', () => {
 
     // Agregar imagen de código de barras
     if (barcodeImage.value) {
-        const imgWidth = 50;
-        const imgHeight = 20;
-        doc.addImage(barcodeImage.value, 'PNG', 10, resumenY + 22, imgWidth, imgHeight);
+        const imgWidth = 158;
+        const imgHeight = 30;
+        doc.addImage(barcodeImage.value, 'PNG', 0, resumenY + 22, imgWidth, imgHeight);
     }
     break;
 
 
-      case 'ticket':
-        // Código para generar el PDF de ticket
-        
-      //   const empresa = $q.localStorage.getItem('empresa') || {
-      //     nombre: "Empresa Ejemplo",
-      //     direccion: "Empresa 123",
-      //     cuit: "20109080601",
-      //     ingBrutos: "3000",
-      //     condIva: "Consumidor Final"
-      // };
+    case 'ticket':
       docTicket.setFont('courier');
-        
-        // Datos de la empresa y del cliente
-        docTicket.setFontSize(9);
-        docTicket.text(`${empresa.nombreTitular}`, 3, 10);
-        docTicket.text(`C.U.I.T: ${empresa.cuit}`, 3, 14);
-        docTicket.text(`Domicilio: ${empresa.direccion}`, 3, 18);
-        docTicket.text(`Inicio de Actividades: ${empresa.fechaInicio}`, 3, 22);
-        docTicket.text(`IVA ${empresa.condIva}`, 3, 26);
-        docTicket.text(`A ${data.condIva}`, 3, 30);
-        
-        // Nombre de la empresa en grande
-        docTicket.setFont('courier', 'bold');
-        docTicket.setFontSize(13);
-        docTicket.text(empresa.nombre, 40, 36, { align: 'center' });
-        
-        // Información del ticket
-        docTicket.setFont('courier', 'normal');
-        docTicket.setFontSize(8);
-        docTicket.text(`TIQUE (Cod. 083)`, 3, 43);
-        const currentDate = new Date();
-        const formattedDate = currentDate.toISOString().split('T')[0];
-        const formattedTime = currentDate.toTimeString().split(' ')[0];
-        docTicket.text(`Fecha: ${formattedDate}`, 20, 46);
-        docTicket.text(`Hora: ${formattedTime}`, 50, 46);
-        
-        // Detalles de los items
-        let total = 0
-        let startYTicket = 53;
-        data.productosFactura.forEach((item, index) => {
-            let y = startYTicket + (index * 6); // Incrementa la coordenada Y por cada item
-            docTicket.text(`${item.cantidad} x ${item.precio}`, 3, y);
-            docTicket.text(`${item.nombre}`, 3, y + 3);
-            docTicket.text(`${item.subtotal}`, pageWidthTicket - 3, y + 3, { align: 'right' });
-            total = total + item.subtotal
-        });
-        
-        // Total
-        startYTicket += data.productosFactura.length * 7;
-        docTicket.setFont('courier', 'bold');
-        docTicket.setFontSize(12);
-        docTicket.text(`Total`, 3, startYTicket);
-        docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket, { align: 'right' });
-        
-        // Información de pago
-        docTicket.setFont('courier', 'normal');
-        docTicket.setFontSize(8);
-        docTicket.text(`RECIBI/MOS`, 3, startYTicket + 4);
-        docTicket.text(`Efectivo`, 3, startYTicket + 8);
-        docTicket.text(`${total}`,  pageWidthTicket - 3, startYTicket + 8, { align: 'right' });
-        docTicket.text(`Suma de sus pagos`, 3, startYTicket + 12);
-        docTicket.text(`${total}`,  pageWidthTicket - 3, startYTicket + 12, { align: 'right' });
-        docTicket.text(`Su Vuelto`, 3, startYTicket + 16);
-        docTicket.text(`0`,  pageWidthTicket - 3, startYTicket + 16, { align: 'right' });
+    
+      // Datos de la empresa y del cliente
+      docTicket.setFontSize(9);
+      docTicket.text(`${empresa.nombreTitular}`, 3, 6);
+      docTicket.text(`C.U.I.T: ${empresa.cuit}`, 3, 10);
+      docTicket.text(`Domicilio: ${empresa.direccion}`, 3, 14);
+      docTicket.text(`Inicio de Actividades: ${empresa.fechaInicio}`, 3, 18);
+      docTicket.text(`IVA ${empresa.condIva}`, 3, 22);
+      docTicket.text(`A ${data.condIva}`, 3, 26);
+      docTicket.text(`Ticket N° ${data.numero}`, 3, 30);
 
-        // return docTicket;
-        
-        break;
+    
+      // Nombre de la empresa en grande
+      docTicket.setFont('courier', 'bold');
+      docTicket.setFontSize(13);
+      docTicket.text(empresa.nombre, 40, 36, { align: 'center' });
+    
+      // Información del ticket
+      docTicket.setFont('courier', 'normal');
+      docTicket.setFontSize(8);
+      docTicket.text(`TIQUE (Cod. 083)`, 3, 43);
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('T')[0];
+      const formattedTime = currentDate.toTimeString().split(' ')[0];
+      docTicket.text(`Fecha de Emisión: ${data.fechaEmision}`, 30, 46);
+      docTicket.text(`Hora: ${formattedTime}`, 50, 43);
+      docTicket.text(`Fecha de Cobro: ${data.fechaCobro}`, 30, 50);
+    
+      // Detalles de los items
+      let total = 0;
+      let startYTicket = 53;
+      data.productosFactura.forEach((item, index) => {
+        let y = startYTicket + (index * 6); // Incrementa la coordenada Y por cada item
+        docTicket.text(`${item.cantidad} x ${item.precio}`, 3, y);
+        docTicket.text(`${item.nombre}`, 3, y + 3);
+        docTicket.text(`${item.subtotal}`, pageWidthTicket - 3, y + 3, { align: 'right' });
+        total += item.subtotal;
+      });
+    
+      // Total
+      startYTicket += data.productosFactura.length * 7;
+      docTicket.setFont('courier', 'bold');
+      docTicket.setFontSize(12);
+      docTicket.text(`Total`, 3, startYTicket);
+      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket, { align: 'right' });
+    
+      // Información de pago
+      docTicket.setFont('courier', 'normal');
+      docTicket.setFontSize(8);
+      docTicket.text(`RECIBI/MOS`, 3, startYTicket + 4);
+      docTicket.text(`Efectivo`, 3, startYTicket + 8);
+      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket + 8, { align: 'right' });
+      docTicket.text(`Suma de sus pagos`, 3, startYTicket + 12);
+      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket + 12, { align: 'right' });
+      docTicket.text(`Su Vuelto`, 3, startYTicket + 16);
+      docTicket.text(`0`, pageWidthTicket - 3, startYTicket + 16, { align: 'right' });
+    
+      // Calcular la posición Y final para la imagen
+      const imageY = startYTicket + 22; // Ajusta el valor si es necesario para separarlo del contenido
+    
+      if (ticketImage.value) {
+        const imgWidth = 30;
+        const imgHeight = 30;
+        docTicket.addImage(ticketImage.value, 'PNG', 5, imageY, imgWidth, imgHeight);
+      }
+    
+      break;
+    
 
       case 'cheque':
 // Estilo del cheque
@@ -295,395 +315,413 @@ export const usePdfStore = defineStore('pdf', () => {
 
 
 
-      case 'debito':
-        doc.setFontSize(10);
-doc.rect(10, 10, 190, 37);
-doc.line(105, 10, 105, 47);
-
-// Datos de la empresa (lado izquierdo)
-doc.setFontSize(16);
-doc.text(empresa.nombre, 57.5, 17, { align: 'center' });
-doc.setFontSize(10);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Razón Social:', 12, 27);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.razonSocial, 38, 27);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Dirección empresarial:', 12, 35);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.direccion, 52, 35);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Cond. IVA:', 12, 43);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.condIva, 38, 43);
-
-// Detalles de la factura (lado derecho)
-doc.setFontSize(17);
-doc.text('NOTA DE CRÉDITO', 152.5, 17, { align: 'center' });
-doc.setFontSize(10);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Punto de Venta:', 107, 25);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.ptoVenta} - ${data.numero.padStart(8, '0')}`, 145, 25);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Emisión:', 107, 29);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.fechaEmision, 145, 29);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('CUIT:', 107, 35);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.cuit, 120, 35);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Ingresos Brutos:', 107, 39);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.ingBrutos, 145, 39);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Inicio Actividades:', 107, 43);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.fechaInicio || '2024/05/31', 162, 43);
-
-// Tipo de factura (en el centro, pegado al borde superior)
-doc.setFontSize(20);
-doc.setDrawColor(0, 0, 0);
-doc.setFillColor(255, 255, 255);
-doc.rect(95, 10, 20, 8, 'FD');
-doc.text(data.condTipo, 105, 14, { align: 'center', baseline: 'middle' });
-
-// Rectángulo abajo de los anteriores (datos del cliente)
-doc.rect(10, 47, 190, 10);
-doc.setFontSize(11);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Periodo Facturado', 12, 53);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`Desde: ${data.periodo.desde}`, 48, 53);
-doc.text(`Hasta: ${data.periodo.hasta}`, 83, 53);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Vto. para el pago: ', 120, 53);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.vencimientoPago, 171, 53);
-
-doc.rect(10, 58, 190, 25);
-doc.setFontSize(11);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('CUIT:', 13, 65);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.cuit, 27, 65);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Condición frente al IVA:', 13, 72);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.condIva, 58, 72);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Condición de venta:', 13, 79);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.condVenta, 51, 79);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Apellido y Nombre / Razón Social:', 65, 65);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.cliente.apellidoNombre} / ${data.razonSocial}`, 130, 65);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Domicilio:', 100, 72);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.domicilio, 120, 72);
-
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Período Asociado:', 100, 79);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.periodo.desde} - ${data.periodo.hasta}`, 136, 79);
-
-   doc.setFillColor(222, 222, 222); // Color gris
-doc.rect(10, 85, 190, 10, 'F'); // Dibuja el rectángulo con fondo gris
-doc.setDrawColor(50, 50, 50); // Color del borde
-doc.rect(10, 85, 190, 10); // Dibuja el borde del rectángulo
-
-// Líneas verticales para separar las columnas
-doc.line(24, 85, 24, 95);  // Línea después de 'Código'
-doc.line(77, 85, 77, 95);  // Línea después de 'Producto/Servicio'
-doc.line(95, 85, 95, 95);  // Línea después de 'Cantidad'
-doc.line(110, 85, 110, 95);  // Línea después de 'U. Medida'
-doc.line(136, 85, 136, 95);  // Línea después de 'Precio Unitario'
-doc.line(148, 85, 148, 95);  // Línea después de '% Bonif'
-doc.line(169, 85, 169, 95);  // Línea después de 'Subtotal'
-doc.line(179, 85, 179, 95);  // Línea después de 'IVA'
-
-// Configuración de texto en negrita para los encabezados de las columnas
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(8);
-doc.text('Código', 12, 91);
-doc.text('Producto/Servicio', 26, 91);
-doc.text('Cantidad', 80, 91);
-doc.text('U. Medida', 96, 91);
-doc.text('Precio Unit.', 115, 91);
-doc.text('% Bonif', 137, 91);
-doc.text('Subtotal', 153, 91);
-doc.text('IVA', 172, 91);
-doc.text('Subtotal c/IVA', 180, 91);
-
-let startYdebito = 95;
-
-// Iterar sobre los items y añadirlos al PDF
-data.productosServicios.forEach((item, index) => {
-    let y = startYdebito + (index * 10); // Incrementa la coordenada Y por cada item
-
-    // Líneas horizontales para cada fila de items
-    doc.setDrawColor(0, 0, 0); // Color del borde
-    doc.line(10, y, 200, y); // Dibuja la línea horizontal para cada item
-
-    // Datos de cada columna
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text(String(index + 1), 12, y + 5); // Código (número de item)
-    doc.text(item.nombre, 26, y + 5);
-    doc.text(String(item.cantidad), 80, y + 5);
-    doc.text(item.unidadMedida, 96, y + 5);
-    doc.text(String(item.precioUnitario), 115, y + 5);
-    // doc.text(String(item.porcentajeBonificacion), 137, y + 5);
-    doc.text(String(item.subtotal), 153, y + 5);
-    doc.text(String(item.iva), 172, y + 5);
-    doc.text(String(item.subtotalConIva), 180, y + 5);
-});
-        break;
+        case 'debito':
+          doc.setFontSize(10);
+          doc.rect(10, 10, 190, 37);
+          doc.line(105, 10, 105, 47);
+        
+          // Datos de la empresa (lado izquierdo)
+          doc.setFontSize(16);
+          doc.text(empresa.nombre, 57.5, 17, { align: 'center' });
+          doc.setFontSize(10);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Razón Social:', 12, 27);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.razonSocial, 38, 27);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Dirección empresarial:', 12, 35);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.direccion, 52, 35);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Cond. IVA:', 12, 43);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.condIva, 38, 43);
+        
+          // Detalles de la factura (lado derecho)
+          doc.setFontSize(17);
+          doc.text('NOTA DE DÉBITO', 152.5, 17, { align: 'center' });
+          doc.setFontSize(10);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Punto de Venta:', 107, 25);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${data.ptoVenta} - ${data.numero.padStart(8, '0')}`, 145, 25);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Fecha de Emisión:', 107, 29);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.fechaEmision, 145, 29);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('CUIT:', 107, 35);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.cuit, 120, 35);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Ingresos Brutos:', 107, 39);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.ingBrutos, 145, 39);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Fecha de Inicio Actividades:', 107, 43);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(empresa.fechaInicio || '2024/05/31', 162, 43);
+        
+          // Tipo de factura (en el centro, pegado al borde superior)
+          doc.setFontSize(20);
+          doc.setDrawColor(0, 0, 0);
+          doc.setFillColor(255, 255, 255);
+          doc.rect(95, 10, 20, 8, 'FD');
+          doc.text(data.condTipo, 105, 14, { align: 'center', baseline: 'middle' });
+        
+          // Rectángulo abajo de los anteriores (datos del cliente)
+          doc.rect(10, 47, 190, 10);
+          doc.setFontSize(11);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Periodo Facturado', 12, 53);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(`Desde: ${data.periodo.desde}`, 48, 53);
+          doc.text(`Hasta: ${data.periodo.hasta}`, 83, 53);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Fecha de Vto. para el pago: ', 120, 53);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.vencimientoPago, 171, 53);
+        
+          doc.rect(10, 58, 190, 25);
+          doc.setFontSize(11);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('CUIT:', 13, 65);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.cliente.cuit, 27, 65);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Condición frente al IVA:', 13, 72);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.cliente.condIva, 58, 72);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Condición de venta:', 13, 79);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.cliente.condVenta, 51, 79);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Apellido y Nombre / Razón Social:', 65, 65);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${data.cliente.apellidoNombre} / ${data.razonSocial}`, 130, 65);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Domicilio:', 100, 72);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(data.cliente.domicilio, 120, 72);
+        
+          // Texto en negrita
+          doc.setFont('helvetica', 'bold');
+          doc.text('Período Asociado:', 100, 79);
+          // Texto normal
+          doc.setFont('helvetica', 'normal');
+          doc.text(`${data.periodo.desde} - ${data.periodo.hasta}`, 136, 79);
+        
+          doc.setFillColor(222, 222, 222); // Color gris
+          doc.rect(10, 85, 190, 10, 'F'); // Dibuja el rectángulo con fondo gris
+          doc.setDrawColor(50, 50, 50); // Color del borde
+          doc.rect(10, 85, 190, 10); // Dibuja el borde del rectángulo
+        
+          // Líneas verticales para separar las columnas
+          doc.line(24, 85, 24, 95);  // Línea después de 'Código'
+          doc.line(77, 85, 77, 95);  // Línea después de 'Producto/Servicio'
+          doc.line(95, 85, 95, 95);  // Línea después de 'Cantidad'
+          doc.line(110, 85, 110, 95);  // Línea después de 'U. Medida'
+          doc.line(136, 85, 136, 95);  // Línea después de 'Precio Unitario'
+          doc.line(148, 85, 148, 95);  // Línea después de '% Bonif'
+          doc.line(169, 85, 169, 95);  // Línea después de 'Subtotal'
+          doc.line(179, 85, 179, 95);  // Línea después de 'IVA'
+        
+          // Configuración de texto en negrita para los encabezados de las columnas
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.text('Código', 12, 91);
+          doc.text('Producto/Servicio', 26, 91);
+          doc.text('Cantidad', 80, 91);
+          doc.text('U. Medida', 96, 91);
+          doc.text('Precio Unit.', 115, 91);
+          doc.text('% Bonif', 137, 91);
+          doc.text('Subtotal', 153, 91);
+          doc.text('IVA', 172, 91);
+          doc.text('Subtotal c/IVA', 180, 91);
+        
+          let startYdebito = 95;
+        
+          // Iterar sobre los items y añadirlos al PDF
+          data.productosServicios.forEach((item, index) => {
+            let y = startYdebito + (index * 10); // Incrementa la coordenada Y por cada item
+        
+            // Líneas horizontales para cada fila de items
+            doc.setDrawColor(0, 0, 0); // Color del borde
+            doc.line(10, y, 200, y); // Dibuja la línea horizontal para cada item
+        
+            // Datos de cada columna
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text(String(index + 1), 12, y + 5); // Código (número de item)
+            doc.text(item.nombre, 26, y + 5);
+            doc.text(String(item.cantidad), 80, y + 5);
+            doc.text(item.unidadMedida, 96, y + 5);
+            doc.text(String(item.precioUnitario), 115, y + 5);
+            // doc.text(String(item.porcentajeBonificacion), 137, y + 5);
+            doc.text(String(item.subtotal), 153, y + 5);
+            doc.text(String(item.iva), 172, y + 5);
+            doc.text(String(item.subtotalConIva), 180, y + 5);
+          });
+        
+          // Calcular la posición Y final para la imagen
+          let finalY = startYdebito + (data.productosServicios.length * 10) + 10; // Añadir espacio adicional para separación
+        
+          // Añadir imagen del código de barras
+          if (barcodeImage.value) {
+            const imgWidth = 158;
+            const imgHeight = 30;
+            doc.addImage(barcodeImage.value, 'PNG', 10, finalY, imgWidth, imgHeight);
+          }
+          break;
+        
 
       case 'credito':
         //doc.rect(10, 10, 190, 10);
-doc.setFontSize(10);
-doc.rect(10, 10, 190, 37);
-doc.line(105, 10, 105, 47);
+        doc.setFontSize(10);
+        doc.rect(10, 10, 190, 37);
+        doc.line(105, 10, 105, 47);
 
-// Datos de la empresa (lado izquierdo)
-doc.setFontSize(16);
-doc.text(empresa.nombre, 57.5, 17, { align: 'center' });
-doc.setFontSize(10);
+        // Datos de la empresa (lado izquierdo)
+        doc.setFontSize(16);
+        doc.text(empresa.nombre, 57.5, 17, { align: 'center' });
+        doc.setFontSize(10);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Razón Social:', 12, 27);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.razonSocial, 38, 27);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Razón Social:', 12, 27);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.razonSocial, 38, 27);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Dirección empresarial:', 12, 35);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.direccion, 52, 35);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Dirección empresarial:', 12, 35);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.direccion, 52, 35);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Cond. IVA:', 12, 43);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.condIva, 38, 43);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Cond. IVA:', 12, 43);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.condIva, 38, 43);
 
-// Detalles de la factura (lado derecho)
-doc.setFontSize(17);
-doc.text('NOTA DE CRÉDITO', 152.5, 17, { align: 'center' });
-doc.setFontSize(10);
+        // Detalles de la factura (lado derecho)
+        doc.setFontSize(17);
+        doc.text('NOTA DE CRÉDITO', 152.5, 17, { align: 'center' });
+        doc.setFontSize(10);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Punto de Venta:', 107, 25);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.ptoVenta} - ${data.numero.padStart(8, '0')}`, 145, 25);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Punto de Venta:', 107, 25);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${data.ptoVenta} - ${data.numero.padStart(8, '0')}`, 145, 25);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Emisión:', 107, 29);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.fechaEmision, 145, 29);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Fecha de Emisión:', 107, 29);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.fechaEmision, 145, 29);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('CUIT:', 107, 35);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.cuit, 120, 35);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('CUIT:', 107, 35);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.cuit, 120, 35);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Ingresos Brutos:', 107, 39);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.ingBrutos, 145, 39);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Ingresos Brutos:', 107, 39);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.ingBrutos, 145, 39);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Inicio Actividades:', 107, 43);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(empresa.fechaInicio || '2024/05/31', 162, 43);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Fecha de Inicio Actividades:', 107, 43);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(empresa.fechaInicio || '2024/05/31', 162, 43);
 
-// Tipo de factura (en el centro, pegado al borde superior)
-doc.setFontSize(20);
-doc.setDrawColor(0, 0, 0);
-doc.setFillColor(255, 255, 255);
-doc.rect(95, 10, 20, 8, 'FD');
-doc.text(data.condTipo, 105, 14, { align: 'center', baseline: 'middle' });
+        // Tipo de factura (en el centro, pegado al borde superior)
+        doc.setFontSize(20);
+        doc.setDrawColor(0, 0, 0);
+        doc.setFillColor(255, 255, 255);
+        doc.rect(95, 10, 20, 8, 'FD');
+        doc.text(data.condTipo, 105, 14, { align: 'center', baseline: 'middle' });
 
-// Rectángulo abajo de los anteriores (datos del cliente)
-doc.rect(10, 47, 190, 10);
-doc.setFontSize(11);
+        // Rectángulo abajo de los anteriores (datos del cliente)
+        doc.rect(10, 47, 190, 10);
+        doc.setFontSize(11);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Periodo Facturado', 12, 53);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`Desde: ${data.periodo.desde}`, 48, 53);
-doc.text(`Hasta: ${data.periodo.hasta}`, 83, 53);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Periodo Facturado', 12, 53);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Desde: ${data.periodo.desde}`, 48, 53);
+        doc.text(`Hasta: ${data.periodo.hasta}`, 83, 53);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Fecha de Vto. para el pago: ', 120, 53);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.vencimientoPago, 171, 53);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Fecha de Vto. para el pago: ', 120, 53);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.vencimientoPago, 171, 53);
 
-doc.rect(10, 58, 190, 25);
-doc.setFontSize(11);
+        doc.rect(10, 58, 190, 25);
+        doc.setFontSize(11);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('CUIT:', 13, 65);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.cuit, 27, 65);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('CUIT:', 13, 65);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.cliente.cuit, 27, 65);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Condición frente al IVA:', 13, 72);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.condIva, 58, 72);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Condición frente al IVA:', 13, 72);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.cliente.condIva, 58, 72);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Condición de venta:', 13, 79);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.condVenta, 51, 79);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Condición de venta:', 13, 79);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.cliente.condVenta, 51, 79);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Apellido y Nombre / Razón Social:', 65, 65);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.cliente.apellidoNombre} / ${data.razonSocial}`, 130, 65);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Apellido y Nombre / Razón Social:', 65, 65);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${data.cliente.apellidoNombre} / ${data.razonSocial}`, 130, 65);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Domicilio:', 100, 72);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(data.cliente.domicilio, 120, 72);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Domicilio:', 100, 72);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(data.cliente.domicilio, 120, 72);
 
-// Texto en negrita
-doc.setFont('helvetica', 'bold');
-doc.text('Período Asociado:', 100, 79);
-// Texto normal
-doc.setFont('helvetica', 'normal');
-doc.text(`${data.periodo.desde} - ${data.periodo.hasta}`, 136, 79);
+        // Texto en negrita
+        doc.setFont('helvetica', 'bold');
+        doc.text('Período Asociado:', 100, 79);
+        // Texto normal
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${data.periodo.desde} - ${data.periodo.hasta}`, 136, 79);
 
-   doc.setFillColor(222, 222, 222); // Color gris
-doc.rect(10, 85, 190, 10, 'F'); // Dibuja el rectángulo con fondo gris
-doc.setDrawColor(50, 50, 50); // Color del borde
-doc.rect(10, 85, 190, 10); // Dibuja el borde del rectángulo
+          doc.setFillColor(222, 222, 222); // Color gris
+        doc.rect(10, 85, 190, 10, 'F'); // Dibuja el rectángulo con fondo gris
+        doc.setDrawColor(50, 50, 50); // Color del borde
+        doc.rect(10, 85, 190, 10); // Dibuja el borde del rectángulo
 
-// Líneas verticales para separar las columnas
-doc.line(24, 85, 24, 95);  // Línea después de 'Código'
-doc.line(77, 85, 77, 95);  // Línea después de 'Producto/Servicio'
-doc.line(95, 85, 95, 95);  // Línea después de 'Cantidad'
-doc.line(110, 85, 110, 95);  // Línea después de 'U. Medida'
-doc.line(136, 85, 136, 95);  // Línea después de 'Precio Unitario'
-doc.line(148, 85, 148, 95);  // Línea después de '% Bonif'
-doc.line(169, 85, 169, 95);  // Línea después de 'Subtotal'
-doc.line(179, 85, 179, 95);  // Línea después de 'IVA'
+        // Líneas verticales para separar las columnas
+        doc.line(24, 85, 24, 95);  // Línea después de 'Código'
+        doc.line(77, 85, 77, 95);  // Línea después de 'Producto/Servicio'
+        doc.line(95, 85, 95, 95);  // Línea después de 'Cantidad'
+        doc.line(110, 85, 110, 95);  // Línea después de 'U. Medida'
+        doc.line(136, 85, 136, 95);  // Línea después de 'Precio Unitario'
+        doc.line(148, 85, 148, 95);  // Línea después de '% Bonif'
+        doc.line(169, 85, 169, 95);  // Línea después de 'Subtotal'
+        doc.line(179, 85, 179, 95);  // Línea después de 'IVA'
 
-// Configuración de texto en negrita para los encabezados de las columnas
-doc.setFont('helvetica', 'bold');
-doc.setFontSize(8);
-doc.text('Código', 12, 91);
-doc.text('Producto/Servicio', 26, 91);
-doc.text('Cantidad', 80, 91);
-doc.text('U. Medida', 96, 91);
-doc.text('Precio Unit.', 115, 91);
-doc.text('% Bonif', 137, 91);
-doc.text('Subtotal', 153, 91);
-doc.text('IVA', 172, 91);
-doc.text('Subtotal c/IVA', 180, 91);
+        // Configuración de texto en negrita para los encabezados de las columnas
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text('Código', 12, 91);
+        doc.text('Producto/Servicio', 26, 91);
+        doc.text('Cantidad', 80, 91);
+        doc.text('U. Medida', 96, 91);
+        doc.text('Precio Unit.', 115, 91);
+        doc.text('% Bonif', 137, 91);
+        doc.text('Subtotal', 153, 91);
+        doc.text('IVA', 172, 91);
+        doc.text('Subtotal c/IVA', 180, 91);
 
-let startY = 95;
+        let startY = 95;
 
-// Iterar sobre los items y añadirlos al PDF
-data.productosServicios.forEach((item, index) => {
-    let y = startY + (index * 10); // Incrementa la coordenada Y por cada item
+        // Iterar sobre los items y añadirlos al PDF
+        data.productosServicios.forEach((item, index) => {
+            let y = startY + (index * 10); // Incrementa la coordenada Y por cada item
 
-    // Líneas horizontales para cada fila de items
-    doc.setDrawColor(0, 0, 0); // Color del borde
-    doc.line(10, y, 200, y); // Dibuja la línea horizontal para cada item
+            // Líneas horizontales para cada fila de items
+            doc.setDrawColor(0, 0, 0); // Color del borde
+            doc.line(10, y, 200, y); // Dibuja la línea horizontal para cada item
 
-    // Datos de cada columna
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text(String(index + 1), 12, y + 5); // Código (número de item)
-    doc.text(item.nombre, 26, y + 5);
-    doc.text(String(item.cantidad), 80, y + 5);
-    doc.text(item.unidadMedida, 96, y + 5);
-    doc.text(String(item.precioUnitario), 115, y + 5);
-    // doc.text(String(item.porcentajeBonificacion), 137, y + 5);
-    doc.text(String(item.subtotal), 153, y + 5);
-    doc.text(String(item.iva), 172, y + 5);
-    doc.text(String(item.subtotalConIva), 180, y + 5);
-});
+            // Datos de cada columna
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.text(String(index + 1), 12, y + 5); // Código (número de item)
+            doc.text(item.nombre, 26, y + 5);
+            doc.text(String(item.cantidad), 80, y + 5);
+            doc.text(item.unidadMedida, 96, y + 5);
+            doc.text(String(item.precioUnitario), 115, y + 5);
+            // doc.text(String(item.porcentajeBonificacion), 137, y + 5);
+            doc.text(String(item.subtotal), 153, y + 5);
+            doc.text(String(item.iva), 172, y + 5);
+            doc.text(String(item.subtotalConIva), 180, y + 5);
+        });
+        let finalYCredito = startY + (data.productosServicios.length * 10) + 10;
+
+        if (barcodeImage.value) {
+          const imgWidth = 158;
+          const imgHeight = 30;
+          doc.addImage(barcodeImage.value, 'PNG', 10, finalYCredito, imgWidth, imgHeight);
+        }
         break;
 
       default:
@@ -739,6 +777,7 @@ data.productosServicios.forEach((item, index) => {
   return {
     barcodeImage,
     loadBarcodeImage,
+    loadTicketImage,
     verPDF,
     prepImpresion,
     guardarPDF,

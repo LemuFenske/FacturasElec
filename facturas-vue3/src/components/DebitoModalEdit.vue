@@ -9,7 +9,7 @@
           <div>
             <q-list class="full-width">
               <q-item-label header>Datos de la Nota de Débito</q-item-label>
-              <q-item>
+              <!-- <q-item>
                 <q-input
                   class="full-width"
                   v-model="notaDebito.numero"
@@ -17,7 +17,7 @@
                   label="Número de Nota de Débito"
                   readonly
                 ></q-input>
-              </q-item>
+              </q-item> -->
               <q-item>
                 <q-select
                   class="full-width"
