@@ -53,31 +53,21 @@ module.exports = configure(function (/* ctx */) {
       },
       publicPath: '/facturas-test/',
       vueRouterMode: 'hash', // available values: 'hash', 'history'
-      // vueRouterBase,
-      // vueDevtools,
-      // vueOptionsAPI: false,
-
-      // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
-
-      // publicPath: '/',
-      // analyze: true,
-      // env: {},
-      // rawDefine: {}
-      // ignorePublicFolder: true,
-      // minify: false,
-      // polyfillModulePreload: true,
-      // distDir
-
-      // extendViteConf (viteConf) {},
-      // viteVuePluginOptions: {},
-
       vitePlugins: [
         ['vite-plugin-checker', {
           eslint: {
             lintCommand: 'eslint "./**/*.{js,mjs,cjs,vue}"'
           }
         }, { server: false }]
-      ]
+      ],
+      extendWebpack(cfg) {
+        cfg.plugins.push(
+          new InjectManifest({
+            swSrc: 'src-pwa/custom-service-worker.js', // El archivo fuente de tu service worker
+            swDest: 'service-worker.js', // El archivo de salida de tu service worker
+          })
+        );
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
@@ -143,16 +133,25 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'injectManifest', // or 'injectManifest'
-      injectPwaMetaTags: true, // boolean | (() => string)
-      swFilename: 'sw.js', // should be .js (as it's the distribution file, not the input file)
+      workboxMode: 'injectManifest', // Cambia a 'GenerateSW' si no estás usando un custom service worker
+      injectPwaMetaTags: true,
+      swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
       useCredentialsForManifestTag: false,
-      extendGenerateSWOptions (cfg) {},
-      extendInjectManifestOptions (cfg) {},
-      extendManifestJson (json) {},
-      extendPWACustomSWConf (esbuildConf) {}
+      extendGenerateSWOptions(cfg) {
+        // Aquí puedes agregar opciones adicionales si es necesario
+      },
+      extendInjectManifestOptions(cfg) {
+        // Aquí puedes agregar opciones adicionales si es necesario
+      },
+      extendManifestJson(json) {
+        // Aquí puedes extender el archivo manifest.json si es necesario
+      },
+      extendPWACustomSWConf(cfg) {
+        // Aquí puedes extender la configuración de esbuild si es necesario
+      }
     },
+    
     
     sourceFiles: {
       pwaRegisterServiceWorker: 'src-pwa/register-service-worker',
