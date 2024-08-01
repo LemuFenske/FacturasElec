@@ -106,10 +106,18 @@
     }
   };
   
+
   const showConfirmationModal = (ticket) => {
     ticketActual.value = ticket;
+  if (ticketActual.value.confirmed) {
+    guardarTicketPDF();
+    return
+  } else {
     confirmationModal.value = true;
-  };
+  }
+};
+
+
   
   const guardarTicketPDF = () => {
     if (ticketActual.value) {

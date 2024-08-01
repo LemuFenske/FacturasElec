@@ -102,10 +102,19 @@
     }
   };
   
+
   const showConfirmationModal = (debito) => {
     debitoActual.value = debito;
+  if (debitoActual.value.confirmed) {
+    guardarDebitoPDF();
+    return
+  } else {
     confirmationModal.value = true;
-  };
+  }
+};
+
+
+
   
   const guardarDebitoPDF = () => {
     if (debitoActual.value) {

@@ -172,6 +172,8 @@ const factura = ref({
   fecha: new Date().toISOString().split('T')[0],
   condVenta: '',
   ivaPorcentaje: 0,
+  total: 0,
+  subtotal: 0,
   cliente: {
     cuit: '',
     nombre: '',
@@ -203,6 +205,13 @@ const subtotal = computed(() =>
 );
 const iva = computed(() => subtotal.value * (ivaPorcentaje.value / 100));
 const total = computed(() => subtotal.value + iva.value);
+
+watch(subtotal, (newVal) => {
+  factura.value.subtotal = newVal;
+});
+watch(total, (newVal) => {
+  factura.value.total = newVal;
+});
 
 const $q = useQuasar();
 
@@ -242,6 +251,9 @@ const limpiarInputs = () => {
     numero: '',
     fecha: new Date().toISOString().split('T')[0],
     condVenta: '',
+    ivaPorcentaje: 0,
+    total: 0,
+    subtotal: 0,
     cliente: {
       cuit: '',
       nombre: '',
@@ -337,6 +349,7 @@ const eliminarProducto = (index) => {
   }
 };
 </script>
+
 
 
 

@@ -222,7 +222,8 @@ const notaDebito = ref({
       iva: 0,
       subtotalConIva: 0
     }
-  ]
+  ],
+  total: 0
 });
 
 const opcionesTipo = ref([
@@ -271,6 +272,11 @@ const calcularSubtotal = (producto) => {
 
 const calcularSubtotalConIva = (producto) => {
   producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
+  calcularTotal();
+};
+
+const calcularTotal = () => {
+  notaDebito.value.total = notaDebito.value.productosServicios.reduce((sum, producto) => sum + producto.subtotalConIva, 0);
 };
 
 watch(notaDebito.value.productosServicios, (newVal) => {
@@ -324,7 +330,8 @@ const limpiarInputs = () => {
         iva: 0,
         subtotalConIva: 0
       }
-    ]
+    ],
+    total: 0
   };
 };
 
@@ -370,7 +377,6 @@ const guardarNotaDebito = () => {
     return;
   }
 
-
   // Asegurar que el punto de venta tenga 4 dígitos
   formatPtoVenta();
 
@@ -392,6 +398,7 @@ const guardarNotaDebito = () => {
   limpiarInputs()
 };
 </script>
+
 
 
 

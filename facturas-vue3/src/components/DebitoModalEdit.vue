@@ -9,15 +9,6 @@
           <div>
             <q-list class="full-width">
               <q-item-label header>Datos de la Nota de Débito</q-item-label>
-              <!-- <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="notaDebito.numero"
-                  type="number"
-                  label="Número de Nota de Débito"
-                  readonly
-                ></q-input>
-              </q-item> -->
               <q-item>
                 <q-select
                   class="full-width"
@@ -182,15 +173,123 @@
     </q-dialog>
   </template>
   
-  <script setup>
-  import { ref, computed, watch } from 'vue';
-  import { useModalStore } from '../stores/modalVariables.js';
-  import { useQuasar } from 'quasar';
-  
-  const modalStore = useModalStore();
-  const isOpen = computed(() => modalStore.debitoEditIsOpen);
-  
-  const notaDebito = ref({
+ <script setup>
+import { ref, computed, watch } from 'vue';
+import { useModalStore } from '../stores/modalVariables.js';
+import { useQuasar } from 'quasar';
+
+const modalStore = useModalStore();
+const isOpen = computed(() => modalStore.debitoIsOpen);
+
+const notaDebito = ref({
+  numero: '',
+  confirmed: false,
+  fecha: new Date().toISOString().split('T')[0],
+  periodo: {
+    desde: '',
+    hasta: ''
+  },
+  condTipo: '',
+  fechaEmision: '',
+  ptoVenta: '',
+  vencimientoPago: '',
+  cliente: {
+    condIva: '',
+    apellidoNombre: '',
+    cuit: '',
+    domicilio: '',
+    razonSocial: '',
+    condVenta: '',
+  },
+  productosServicios: [
+    {
+      nombre: '',
+      cantidad: 0,
+      unidadMedida: '',
+      precioUnitario: 0,
+      subtotal: 0,
+      iva: 0,
+      subtotalConIva: 0
+    }
+  ],
+  total: 0
+});
+
+const opcionesTipo = ref([
+  'A',
+  'B',
+  'C',
+]);
+
+const opcionesIva = ref([
+  'Responsable Inscripto',
+  'Monotributista',
+  'Exento',
+  'No Responsable',
+  'Consumidor Final'
+]);
+
+const opcionesUnidades = ['Unidad', 'Kg', 'Litro', 'Horas'];
+
+const $q = useQuasar();
+const emit = defineEmits(['debito-guardado']);
+
+const closeModal = () => {
+  modalStore.toggleDebito();
+};
+
+const agregarProducto = () => {
+  notaDebito.value.productosServicios.push({
+    nombre: '',
+    cantidad: 0,
+    unidadMedida: '',
+    precioUnitario: 0,
+    subtotal: 0,
+    iva: 0,
+    subtotalConIva: 0
+  });
+};
+
+const eliminarProducto = (index) => {
+  notaDebito.value.productosServicios.splice(index, 1);
+};
+
+const calcularSubtotal = (producto) => {
+  producto.subtotal = producto.cantidad * producto.precioUnitario;
+  calcularSubtotalConIva(producto);
+};
+
+const calcularSubtotalConIva = (producto) => {
+  producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
+  calcularTotal();
+};
+
+const calcularTotal = () => {
+  notaDebito.value.total = notaDebito.value.productosServicios.reduce((sum, producto) => sum + producto.subtotalConIva, 0);
+};
+
+watch(notaDebito.value.productosServicios, (newVal) => {
+  newVal.forEach(producto => {
+    calcularSubtotal(producto);
+  });
+}, { deep: true });
+
+// Método para formatear la fecha a dd/mm/aaaa
+const formatFecha = (fecha) => {
+  const date = new Date(fecha);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
+// Método para formatear punto de venta
+const formatPtoVenta = () => {
+  notaDebito.value.ptoVenta = ('0000' + notaDebito.value.ptoVenta).substr(-4);
+};
+
+const limpiarInputs = () => {
+  notaDebito.value = {
     numero: '',
     confirmed: false,
     fecha: new Date().toISOString().split('T')[0],
@@ -220,82 +319,109 @@
         iva: 0,
         subtotalConIva: 0
       }
-    ]
-  });
-  
-  const opcionesTipo = ref([
-    'A',
-    'B',
-    'C',
-  ]);
-  
-  const opcionesIva = ref([
-    'Responsable Inscripto',
-    'Monotributista',
-    'Exento',
-    'No Responsable',
-    'Consumidor Final'
-  ]);
-  
-  const opcionesUnidades = ['Unidad', 'Kg', 'Litro', 'Horas'];
-  
-  const $q = useQuasar();
-  const emit = defineEmits(['debito-editado']);
-  
-  const closeModal = () => {
-    modalStore.toggleDebitoEdit();
+    ],
+    total: 0
   };
-  
-  const agregarProducto = () => {
-    notaDebito.value.productosServicios.push({
-      nombre: '',
-      cantidad: 0,
-      unidadMedida: '',
-      precioUnitario: 0,
-      subtotal: 0,
-      iva: 0,
-      subtotalConIva: 0
+};
+
+const isFormValid = computed(() => {
+  return (
+    notaDebito.value.numero &&
+    notaDebito.value.condTipo &&
+    notaDebito.value.fechaEmision &&
+    notaDebito.value.ptoVenta &&
+    notaDebito.value.vencimientoPago &&
+    notaDebito.value.periodo.desde &&
+    notaDebito.value.periodo.hasta &&
+    notaDebito.value.cliente.condIva &&
+    notaDebito.value.cliente.apellidoNombre &&
+    notaDebito.value.cliente.cuit &&
+    notaDebito.value.cliente.domicilio &&
+    notaDebito.value.cliente.razonSocial &&
+    notaDebito.value.cliente.condVenta &&
+    notaDebito.value.productosServicios.every(producto => 
+      producto.nombre &&
+      producto.cantidad > 0 &&
+      producto.unidadMedida &&
+      producto.precioUnitario > 0
+    )
+  );
+});
+
+const numeroNotaDebitoRepetido = computed(() => {
+  let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+  return notasDebito.some(nota => nota.numero === notaDebito.value.numero);
+});
+
+const guardarNotaDebito = () => {
+  let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+
+  if (numeroNotaDebitoRepetido.value) {
+    $q.notify({
+      type: 'negative',
+      message: 'El número de Nota de Crédito ya existe.',
+      timeout: 2000,
     });
-  };
-  
-  const eliminarProducto = (index) => {
-    notaDebito.value.productosServicios.splice(index, 1);
-  };
-  
-  const calcularSubtotal = (producto) => {
-    producto.subtotal = producto.cantidad * producto.precioUnitario;
-    calcularSubtotalConIva(producto);
-  };
-  
-  const calcularSubtotalConIva = (producto) => {
-    producto.subtotalConIva = producto.subtotal + (producto.subtotal * (producto.iva / 100));
-  };
-  
-  watch(notaDebito.value.productosServicios, (newVal) => {
-    newVal.forEach(producto => {
-      calcularSubtotal(producto);
-    });
-  }, { deep: true });
-  
-  const guardarNotaDebito = () => {
-    let notasDebito = $q.localStorage.getItem('notasDebito') || [];
-    const indice = notasDebito.findIndex(nota => nota.numero === notaDebito.value.numero);
-    if (indice !== -1) {
-        notasDebito[indice] = { ...notaDebito.value };
-    } else {
-        notasDebito.push({ ...notaDebito.value });
-    }
-    $q.localStorage.set('notasDebito', notasDebito);
-    emit('debito-editado', notaDebito.value);
-    closeModal();
+    return;
+  }
+
+  // Asegurar que el punto de venta tenga 4 dígitos
+  formatPtoVenta();
+
+  const nuevaNotaDebito = {
+    ...notaDebito.value,
+    fecha: formatFecha(notaDebito.value.fecha),
+    periodo: {
+      desde: formatFecha(notaDebito.value.periodo.desde),
+      hasta: formatFecha(notaDebito.value.periodo.hasta),
+    },
+    fechaEmision: formatFecha(notaDebito.value.fechaEmision),
+    vencimientoPago: formatFecha(notaDebito.value.vencimientoPago),
+    index: notasDebito.length,
   };
 
-  watch(isOpen, (val) => {
-    if (val && modalStore.debitoToEdit) {
-      notaDebito.value = { ...modalStore.debitoToEdit };
-    }
-  });
-  </script>
+  notasDebito.push(nuevaNotaDebito);
+  $q.localStorage.set('notasDebito', notasDebito);
+  emit('debito-guardado', nuevaNotaDebito);
+  closeModal();
+  limpiarInputs();
+};
+
+const actualizarNotaDebito = () => {
+  let notasDebito = $q.localStorage.getItem('notasDebito') || [];
+
+  // Asegurar que el punto de venta tenga 4 dígitos
+  formatPtoVenta();
+
+  const notaOriginal = modalStore.debitoToEdit;
+  
+  const notaActualizada = {
+    ...notaDebito.value,
+    fecha: notaDebito.value.fecha !== notaOriginal.fecha ? formatFecha(notaDebito.value.fecha) : notaDebito.value.fecha,
+    periodo: {
+      desde: notaDebito.value.periodo.desde !== notaOriginal.periodo.desde ? formatFecha(notaDebito.value.periodo.desde) : notaDebito.value.periodo.desde,
+      hasta: notaDebito.value.periodo.hasta !== notaOriginal.periodo.hasta ? formatFecha(notaDebito.value.periodo.hasta) : notaDebito.value.periodo.hasta,
+    },
+    fechaEmision: notaDebito.value.fechaEmision !== notaOriginal.fechaEmision ? formatFecha(notaDebito.value.fechaEmision) : notaDebito.value.fechaEmision,
+    vencimientoPago: notaDebito.value.vencimientoPago !== notaOriginal.vencimientoPago ? formatFecha(notaDebito.value.vencimientoPago) : notaDebito.value.vencimientoPago,
+    index: modalStore.debitoIndex,
+  };
+
+  notasDebito.splice(modalStore.debitoIndex, 1, notaActualizada);
+  $q.localStorage.set('notasDebito', notasDebito);
+  emit('debito-guardado', notaActualizada);
+  closeModal();
+  limpiarInputs();
+};
+
+watch(isOpen, (val) => {
+  if (val && modalStore.debitoToEdit) {
+    notaDebito.value = { ...modalStore.debitoToEdit };
+  }
+});
+</script>
+
+  
   
   <style scoped>
   .centered-modal {

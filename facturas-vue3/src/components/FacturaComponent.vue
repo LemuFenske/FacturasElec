@@ -106,8 +106,13 @@
   
   const showConfirmationModal = (factura) => {
     facturaActual.value = factura;
+  if (facturaActual.value.confirmed) {
+    guardarFacturaPDF();
+    return
+  } else {
     confirmationModal.value = true;
-  };
+  }
+};
   
   const guardarFacturaPDF = () => {
     if (facturaActual.value) {

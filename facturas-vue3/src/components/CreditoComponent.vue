@@ -105,9 +105,14 @@
   
   const showConfirmationModal = (credito) => {
     creditoActual.value = credito;
+  if (creditoActual.value.confirmed) {
+    guardarCreditoPDF();
+    return
+  } else {
     confirmationModal.value = true;
-  };
-  
+  }
+};
+
   const guardarCreditoPDF = () => {
     if (creditoActual.value) {
       creditoActual.value.confirmed = true;
