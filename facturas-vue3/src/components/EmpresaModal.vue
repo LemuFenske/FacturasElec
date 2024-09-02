@@ -28,7 +28,7 @@
             <div class="column">
               <q-input
                 v-model="empresaLocal.razonSocial"
-                label="Razón Social"
+                label="Apellido y Nombre/Razón Social"
                 class="full-width"
               ></q-input>
             </div>
@@ -69,16 +69,9 @@
                 class="full-width"
               ></q-input>
             </div>
-            <div class="column">
-              <q-input
-                v-model="empresaLocal.nombreTitular"
-                label="Nombre del Titular"
-                class="full-width"
-              ></q-input>
-            </div>
           </div>
         </div>
-        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el cheque.</div>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar la Empresa.</div>
         <q-btn :disable="!isFormValid" label="Guardar" @click="guardarEmpresa" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
@@ -106,7 +99,6 @@ const empresaLocal = ref({
   condIva: '',
   ingBrutos: '',
   fechaInicio: new Date().toISOString().split('T')[0],
-  nombreTitular: ''  
 });
 
 const opcionesIva = ref([
@@ -138,8 +130,7 @@ const isFormValid = computed(() => {
     empresaLocal.value.direccion &&
     empresaLocal.value.condIva &&
     empresaLocal.value.ingBrutos &&
-    empresaLocal.value.fechaInicio &&
-    empresaLocal.value.nombreTitular 
+    empresaLocal.value.fechaInicio
   );
 });
 

@@ -26,38 +26,6 @@
                 ></q-input>
               </q-item>
               <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="ticket.cuit"
-                  type="text"
-                  label="CUIT"
-                ></q-input>
-              </q-item>
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="ticket.apellidoNombre"
-                  type="text"
-                  label="Apellido y Nombre"
-                ></q-input>
-              </q-item>
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="ticket.razonSocial"
-                  type="text"
-                  label="Razón Social"
-                ></q-input>
-              </q-item>
-              <q-item>
-                <q-input
-                  class="full-width"
-                  v-model="ticket.domicilio"
-                  type="text"
-                  label="Domicilio"
-                ></q-input>
-              </q-item>
-              <q-item>
                 <q-select
                   class="full-width"
                   v-model="ticket.condIva"
@@ -132,10 +100,6 @@
     confirmed: false,
     numero: '',
     fecha: '',
-    cuit: '',
-    apellidoNombre: '',
-    razonSocial: '',
-    domicilio: '',
     condIva: '',
     productosFactura: [
       {

@@ -83,9 +83,9 @@
     modalStore.toggleDebito();
   };
   
-  const openDebitoEditModal = (credito) => {
+  const openDebitoEditModal = (debito) => {
     const modalStore = useModalStore();
-    modalStore.setDebitoToEdit(credito);
+    modalStore.setDebitoToEdit(debito);
     modalStore.toggleDebitoEdit();
   };
   

@@ -37,14 +37,6 @@
               ></q-input>
             </q-item>
             <q-item>
-              <q-input
-                class="full-width"
-                v-model="ticket.fechaCobro"
-                type="date"
-                label="Fecha de Cobro"
-              ></q-input>
-            </q-item>
-            <q-item>
               <q-select
                 class="full-width"
                 v-model="ticket.condIva"
@@ -101,7 +93,7 @@
             <q-btn flat round dense icon="add" @click="agregarProducto" class="q-mt-md"></q-btn>
           </q-list>
         </div>
-        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el cheque.</div>
+        <div v-if="!isFormValid" class="q-mt-md text-negative text-center">Todos los campos deben estar completos para poder guardar el ticket.</div>
         <q-btn :disable="!isFormValid || numeroTicketRepetido" label="Guardar" @click="guardarTicket" class="buttonsave"></q-btn>
       </q-card-section>
     </q-card>
@@ -193,7 +185,6 @@ const limpiarInputs = () => {
     numero: '',
     ptoVenta: '',
     fechaEmision: '',
-    fechaCobro: '',
     condIva: '',
     productosFactura: [
       {
@@ -214,7 +205,6 @@ const isFormValid = computed(() => {
     ticket.value.numero &&
     ticket.value.ptoVenta &&
     ticket.value.fechaEmision &&
-    ticket.value.fechaCobro &&
     ticket.value.condIva &&
     ticket.value.productosFactura.every(producto =>
       producto.nombre && producto.cantidad > 0 && producto.precio > 0 && producto.unidad

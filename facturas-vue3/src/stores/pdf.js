@@ -119,17 +119,24 @@ export const usePdfStore = defineStore('pdf', () => {
 
         // Dibujar encabezado de la tabla
         doc.setFontSize(10);
-        const headers = ['Código', 'Producto / Servicio', 'Cantidad', 'Unidad Medida', 'Precio Unitario', 'Subtotal'];
-        headers.forEach((header, index) => {
-            doc.text(header, 12 + index * 30, currentY);
+        const headers = [
+            { text: 'Código', x: 12 },
+            { text: 'Producto / Servicio', x: 27 },
+            { text: 'Cantidad', x: 75 },
+            { text: 'Unidad Medida', x: 100 },
+            { text: 'Precio Unitario', x: 140 },
+            { text: 'Subtotal', x: 180 }
+        ];
+        headers.forEach((header) => {
+            doc.text(header.text, header.x, currentY);
         });
         doc.line(10, currentY + 2, 200, currentY + 2); // Línea debajo del encabezado
         currentY += rowHeight;
 
         // Dibujar filas de la tabla
         productos.forEach(producto => {
-            producto.forEach((item, index) => {
-                doc.text(item.toString(), 12 + index * 30, currentY);
+            headers.forEach((header, index) => {
+                doc.text(producto[index].toString(), header.x, currentY);
             });
             doc.line(10, currentY + 2, 200, currentY + 2); // Línea debajo de la fila
             currentY += rowHeight;
@@ -141,9 +148,9 @@ export const usePdfStore = defineStore('pdf', () => {
         doc.setFontSize(10);
         const marginRight = 13;
         // const pageWidth = 210;
-        const subtotalText = `Subtotal: $${data.subtotal.toFixed(4)}`;
-        const ivaText = `IVA 21%: $${data.iva.toFixed(4)}`;
-        const totalText = `Total: $${data.total.toFixed(4)}`;
+        const subtotalText = `Subtotal: $${data.subtotal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const ivaText = `IVA 21%: $${data.iva.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const totalText = `Total: $${data.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         const subtotalTextWidth = doc.getTextWidth(subtotalText);
         const ivaTextWidth = doc.getTextWidth(ivaText);
         const totalTextWidth = doc.getTextWidth(totalText);
@@ -183,21 +190,22 @@ export const usePdfStore = defineStore('pdf', () => {
       docTicket.setFont('courier', 'normal');
       docTicket.setFontSize(8);
       docTicket.text(`TIQUE (Cod. 083)`, 3, 43);
+      docTicket.text(`${data.ptoVenta}-${data.numero}`, 3, 46);
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
       const formattedTime = currentDate.toTimeString().split(' ')[0];
       docTicket.text(`Fecha de Emisión: ${data.fechaEmision}`, 30, 46);
       docTicket.text(`Hora: ${formattedTime}`, 50, 43);
-      docTicket.text(`Fecha de Cobro: ${data.fechaCobro}`, 30, 50);
+      // docTicket.text(`Fecha de Cobro: ${data.fechaCobro}`, 30, 50);
     
       // Detalles de los items
       let total = 0;
       let startYTicket = 53;
       data.productosFactura.forEach((item, index) => {
         let y = startYTicket + (index * 6); // Incrementa la coordenada Y por cada item
-        docTicket.text(`${item.cantidad} x ${item.precio}`, 3, y);
+        docTicket.text(`${item.cantidad} x ${item.precio * 1.21}`, 3, y);
         docTicket.text(`${item.nombre}`, 3, y + 3);
-        docTicket.text(`${item.subtotal}`, pageWidthTicket - 3, y + 3, { align: 'right' });
+        docTicket.text(`${item.subtotal * 1.21}`, pageWidthTicket - 3, y + 3, { align: 'right' });
         total += item.subtotal;
       });
     
@@ -206,16 +214,16 @@ export const usePdfStore = defineStore('pdf', () => {
       docTicket.setFont('courier', 'bold');
       docTicket.setFontSize(12);
       docTicket.text(`Total`, 3, startYTicket);
-      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket, { align: 'right' });
+      docTicket.text(`${total * 1.21}`, pageWidthTicket - 3, startYTicket, { align: 'right' });
     
       // Información de pago
       docTicket.setFont('courier', 'normal');
       docTicket.setFontSize(8);
       docTicket.text(`RECIBI/MOS`, 3, startYTicket + 4);
       docTicket.text(`Efectivo`, 3, startYTicket + 8);
-      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket + 8, { align: 'right' });
+      docTicket.text(`${total * 1.21}`, pageWidthTicket - 3, startYTicket + 8, { align: 'right' });
       docTicket.text(`Suma de sus pagos`, 3, startYTicket + 12);
-      docTicket.text(`${total}`, pageWidthTicket - 3, startYTicket + 12, { align: 'right' });
+      docTicket.text(`${total * 1.21}`, pageWidthTicket - 3, startYTicket + 12, { align: 'right' });
       docTicket.text(`Su Vuelto`, 3, startYTicket + 16);
       docTicket.text(`0`, pageWidthTicket - 3, startYTicket + 16, { align: 'right' });
     

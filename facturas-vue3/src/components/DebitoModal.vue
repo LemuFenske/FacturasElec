@@ -79,7 +79,7 @@
               <q-input
                 class="full-width"
                 v-model="notaDebito.cliente.apellidoNombre"
-                label="Apellido y Nombre"
+                label="Apellido y Nombre/Razón Social"
               ></q-input>
             </q-item>
             <q-item>
@@ -94,13 +94,6 @@
                 class="full-width"
                 v-model="notaDebito.cliente.domicilio"
                 label="Domicilio"
-              ></q-input>
-            </q-item>
-            <q-item>
-              <q-input
-                class="full-width"
-                v-model="notaDebito.cliente.razonSocial"
-                label="Razón Social"
               ></q-input>
             </q-item>
             <q-item>
